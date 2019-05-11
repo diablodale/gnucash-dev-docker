@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+# enables minimal translation support when OS has gettext < 0.19.6
+if grep -q "Ubuntu 14.04" /etc/os-release; then
+    export _GNC_CMAKE_COMPAT=-DALLOW_OLD_GETTEXT=ON
+fi
+
+. /commonbuild

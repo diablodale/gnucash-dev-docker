@@ -1,0 +1,34 @@
+#!/bin/bash -e
+
+export TZ="Etc/UTC"
+mkdir -p "$HOME"/.local/share
+
+# basic check for *any* git repo in /gnucash; if no repo then git clone gnucash from github
+mkdir -p /gnucash
+if [ ! -d /gnucash/.git ]; then
+  git clone https://github.com/Gnucash/gnucash.git
+fi
+
+# prepare build directory
+mkdir -p /build
+cd /build
+
+# build and run unit tests
+if [[ "$BUILDTYPE" == "cmake-make" ]]; then
+    cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/
+    make -j 4
+    #make check || ../afterfailure
+elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
+    cmake -DWITH_PYTHON=ON -DCMAKE_BUILD_TYPE=debug -G Ninja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
+    ninja
+    #ninja check || ../afterfailure;
+else
+    echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
+fi
+
+echo "*******************"
+echo "* Build concluded *"
+echo "*******************"
+
+# prevents container from immediately exiting after build
+tail -f /dev/null

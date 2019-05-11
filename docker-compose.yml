@@ -1,0 +1,42 @@
+version: '2.4'
+
+networks:
+  default:
+
+services:
+
+  ubuntu-14.04:
+    build:
+      context: .
+      dockerfile: ubuntu.dockerfile
+      args:
+        - OS_TAG=14.04
+    image: gnucashbuild:ubuntu-14.04
+    container_name: gnucashbuild-ubuntu-14.04
+    networks:
+      - default
+    init: true # file version 2.2-2.4 or 3.7+ needed for this
+    stdin_open: true
+    #environment:
+    #  - BUILDTYPE=stop
+    #volumes:
+    #  - ./gnucash:/gnucash
+    #  - ./build:/build
+
+  ubuntu-16.04:
+    build:
+      context: .
+      dockerfile: ubuntu.dockerfile
+      args:
+        - OS_TAG=16.04
+    image: gnucashbuild:ubuntu-16.04
+    container_name: gnucashbuild-ubuntu-16.04
+    networks:
+      - default
+    init: true # file version 2.2-2.4 or 3.7+ needed for this
+    stdin_open: true
+    #environment:
+    #  - BUILDTYPE=stop
+    #volumes:
+    #  - ./gnucash:/gnucash
+    #  - ./build:/build
