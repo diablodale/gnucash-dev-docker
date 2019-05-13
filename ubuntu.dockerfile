@@ -14,8 +14,10 @@ RUN sed -i"" "s/^# deb-src/deb-src/" /etc/apt/sources.list
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && \
     apt-get build-dep -qq gnucash > /dev/null && \
-    apt-get install -qq tzdata git bash-completion cmake$(apt-cache policy cmake|grep -q "Candidate: 2" && echo 3) \
-            make swig xsltproc libdbd-sqlite3 texinfo ninja-build libboost-all-dev libgtk-3-dev libwebkit2gtk-3.0-dev > /dev/null && \
+    apt-get install -qq tzdata git bash-completion make swig xsltproc texinfo ninja-build libboost-all-dev libgtk-3-dev \
+            aqbanking-tools libdbd-sqlite3 libdbd-pgsql libdbd-mysql > /dev/null
+RUN apt-get install -qq cmake$(apt-cache policy cmake|grep -q "Candidate: 2" && echo 3) \
+            libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.0|grep -q "Candidate: [0-9]" && echo 4 || echo 3).0-dev > /dev/null && \
     # why language-pack-fr and not all supported? Perhaps parameterize with ARG
     apt-get --reinstall install -qq language-pack-en language-pack-fr > /dev/null && \
     rm -rf /var/lib/apt/lists/* /tmp/*
@@ -24,11 +26,13 @@ RUN apt-get update -qq && \
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
 
 # environment vars
+RUN update-locale LANG=${LANG:-en_US.UTF-8}
+ENV LANG=${LANG:-en_US.UTF-8}
 ENV GTEST_ROOT=/gtest/googletest
 ENV GMOCK_ROOT=/gtest/googlemock
 ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
 
 # install startup files
-COPY commonbuild ubuntubuild /
-RUN chmod u=rx,go= /commonbuild /ubuntubuild
+COPY commonbuild afterfailure ubuntubuild /
+RUN chmod u=rx,go= /commonbuild /afterfailure /ubuntubuild
 CMD [ "/ubuntubuild" ]

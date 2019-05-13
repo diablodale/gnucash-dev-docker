@@ -1,27 +1,30 @@
 #!/bin/bash -e
 
 export TZ="Etc/UTC"
-mkdir -p "$HOME"/.local/share
 
-# basic check for *any* git repo in /gnucash; if no repo then git clone gnucash from github
+# prepare source directory; basic check for *any* git repo
 mkdir -p /gnucash
-if [ ! -d /gnucash/.git ]; then
-  git clone https://github.com/Gnucash/gnucash.git
+if [ ! -d /gnucash/.git ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
+    git clone -b "$GNC_GIT_CHECKOUT" https://github.com/Gnucash/gnucash.git
 fi
 
 # prepare build directory
 mkdir -p /build
 cd /build
 
+# prepare user settings directory
+mkdir -p "$HOME"/.local/share
+
 # build and run unit tests
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then
     cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/
     make -j 4
-    #make check || ../afterfailure
+    make check || /afterfailure
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
-    cmake -DWITH_PYTHON=ON -DCMAKE_BUILD_TYPE=debug -G Ninja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
+    # TODO remove debug build type
+    cmake -DWITH_PYTHON=ON -DCMAKE_BUILD_TYPE=debug -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
     ninja
-    #ninja check || ../afterfailure;
+    ninja check || /afterfailure;
 else
     echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
 fi
@@ -31,4 +34,5 @@ echo "* Build concluded *"
 echo "*******************"
 
 # prevents container from immediately exiting after build
-tail -f /dev/null
+#exec tail -f /dev/null
+exec bash
