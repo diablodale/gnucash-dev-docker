@@ -38,6 +38,6 @@ ENV GMOCK_ROOT=/gtest/googlemock
 ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
 
 # install startup files
-COPY commonbuild afterfailure ubuntubuild /
-RUN chmod u=rx,go= /commonbuild /afterfailure /ubuntubuild
-CMD [ "/ubuntubuild" ]
+COPY commonbuild afterfailure debianbuild /
+RUN chmod u=rx,go= /commonbuild /afterfailure /debianbuild
+CMD [ "/debianbuild" ]

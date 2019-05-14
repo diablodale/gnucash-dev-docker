@@ -5,7 +5,7 @@ services:
   ubuntu-14.04:
     build:
       context: .
-      dockerfile: ubuntu.dockerfile
+      dockerfile: debian.dockerfile
       args:
         - OS_DIST=ubuntu
         - OS_TAG=14.04
@@ -27,7 +27,7 @@ services:
   ubuntu-16.04:
     build:
       context: .
-      dockerfile: ubuntu.dockerfile
+      dockerfile: debian.dockerfile
       args:
         - OS_DIST=ubuntu
         - OS_TAG=16.04
@@ -49,7 +49,7 @@ services:
   ubuntu-18.04:
     build:
       context: .
-      dockerfile: ubuntu.dockerfile
+      dockerfile: debian.dockerfile
       args:
         - OS_DIST=ubuntu
         - OS_TAG=18.04
@@ -71,7 +71,7 @@ services:
   debian-8:
     build:
       context: .
-      dockerfile: ubuntu.dockerfile
+      dockerfile: debian.dockerfile
       args:
         - OS_DIST=debian
         - OS_TAG=8
