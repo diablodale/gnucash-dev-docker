@@ -1,5 +1,28 @@
-version: '2.4'
+# gnucash-dev-docker: Docker containers for automated OS setup and dev/build environ for gnucash v3+ binaries and docs
+# Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+# Usage:
+#   docker-compose up -d [servicename, ...]
+#
+# If you supply no servicenames, then docker-compose will attempt to start all build configurations below.
+# This template (and the matching 'docker run' settings) can be adapted to common needs using several settings.
+# These settings are described in the first container below as a working example.
+version: '2.4'
 services:
 
   ubuntu-14.04:
@@ -7,22 +30,28 @@ services:
       context: .
       dockerfile: debian.dockerfile
       args:
-        - OS_DIST=ubuntu
-        - OS_TAG=14.04
+        - OS_DIST=ubuntu # dockerhub distribution from which the container is based
+        - OS_TAG=14.04   # dockerhub tag from which thecontainer is based
     image: gnucashbuild:ubuntu-14.04
     container_name: gnucashbuild-ubuntu-14.04
-    network_mode: host # using host network to ease XWindows connectivity
-    init: true # compose file version 2.2-2.4 or 3.7+ needed for this
+    network_mode: host   # host network enables easy XWin connectivity
+    init: true
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
-      - GNC_GIT_CHECKOUT=3.5
-      #- BUILDTYPE=stop
-      #- DISPLAY=192.168.2.23:0.0
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt # all gnucash build options can be set https://code.gnucash.org/wiki/Gnucash_Build_Options
+      - GNC_GIT_CHECKOUT=3.5                            # gnucash git branch|commit|tag to clone and checkout; will not change already existing /build directory content
+      #- BUILDTYPE=stop                                 # make build tool: 'cmake-make' or 'cmake-ninja'; or 'stop' to prevent building. Default value is specific to each OS
+      #- IGNORE_BUILD_FAILURE=1                         # ignores build errors/failures when set to 1; container's log has details
+      - GNC_INSTALL=1                                   # install gnucash using 'make install' when set to 1 and build was successful; ignores result of unit tests
+      #- EXIT_AFTER_TEST=1                              # immediately stop/exit the container with test results when set to 1; container's log has details; good for CI
+      #- DISPLAY=192.168.2.23:0.0                       # XWin setting enables running gnucash inside container and display to XWin on host or remote
     #volumes:
-    #  - ./gnucash:/gnucash
-    #  - ./build:/build
+    #  - ./hostbuilddir:/build                          # maps host build result directory for gnucash into container for build result
+    #  - ./hostgnucashsource:/gnucash                   # mounts host directory containing gnucash source into container.
+                                                        #   Caution: The gnucash build process alters this source directory. If you mount this
+                                                        #   directory from the host, it must be read+write. If you mount this same directory across
+                                                        #   multiple containers, you may encounter difficult to resolve problems.
 
   ubuntu-16.04:
     build:
@@ -33,18 +62,13 @@ services:
         - OS_TAG=16.04
     image: gnucashbuild:ubuntu-16.04
     container_name: gnucashbuild-ubuntu-16.04
-    network_mode: host # using host network to ease XWindows connectivity
-    init: true # compose file version 2.2-2.4 or 3.7+ needed
+    network_mode: host
+    init: true
     tty: true
     stdin_open: true
     environment:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
       - GNC_GIT_CHECKOUT=3.5
-      #- BUILDTYPE=stop
-      #- DISPLAY=192.168.2.23:0.0
-    #volumes:
-    #  - ./gnucash:/gnucash
-    #  - ./build:/build
 
   ubuntu-18.04:
     build:
@@ -55,18 +79,30 @@ services:
         - OS_TAG=18.04
     image: gnucashbuild:ubuntu-18.04
     container_name: gnucashbuild-ubuntu-18.04
-    network_mode: host # using host network to ease XWindows connectivity
-    init: true # compose file version 2.2-2.4 or 3.7+ needed
+    network_mode: host
+    init: true
     tty: true
     stdin_open: true
     environment:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
       - GNC_GIT_CHECKOUT=3.5
-      #- BUILDTYPE=stop
-      #- DISPLAY=192.168.2.23:0.0
-    #volumes:
-    #  - ./gnucash:/gnucash
-    #  - ./build:/build
+
+  ubuntu-19.04:
+    build:
+      context: .
+      dockerfile: debian.dockerfile
+      args:
+        - OS_DIST=ubuntu
+        - OS_TAG=19.04
+    image: gnucashbuild:ubuntu-19.04
+    container_name: gnucashbuild-ubuntu-19.04
+    network_mode: host
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - GNC_GIT_CHECKOUT=3.5
 
   debian-8:
     build:
@@ -77,18 +113,13 @@ services:
         - OS_TAG=8
     image: gnucashbuild:debian-8
     container_name: gnucashbuild-debian-8
-    network_mode: host # using host network to ease XWindows connectivity
-    init: true # compose file version 2.2-2.4 or 3.7+ needed
+    network_mode: host
+    init: true
     tty: true
     stdin_open: true
     environment:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
       - GNC_GIT_CHECKOUT=3.5
-      #- BUILDTYPE=stop
-      #- DISPLAY=192.168.2.23:0.0
-    #volumes:
-    #  - ./gnucash:/gnucash
-    #  - ./build:/build
 
   debian-9:
     build:
@@ -99,15 +130,10 @@ services:
         - OS_TAG=9
     image: gnucashbuild:debian-9
     container_name: gnucashbuild-debian-9
-    network_mode: host # using host network to ease XWindows connectivity
-    init: true # compose file version 2.2-2.4 or 3.7+ needed
+    network_mode: host
+    init: true
     tty: true
     stdin_open: true
     environment:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
       - GNC_GIT_CHECKOUT=3.5
-      #- BUILDTYPE=stop
-      #- DISPLAY=192.168.2.23:0.0
-    #volumes:
-    #  - ./gnucash:/gnucash
-    #  - ./build:/build

@@ -1,10 +1,31 @@
-#!/bin/bash -e
+#!/bin/bash
+
+# gnucash-dev-docker: Docker containers for automated OS setup and dev/build environ for gnucash v3+ binaries and docs
+# Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+if [ "$IGNORE_BUILD_FAILURE" != "1" ]; then
+    set -e
+fi
 
 export TZ="Etc/UTC"
 
-# prepare source directory; basic check for *any* git repo
+# prepare source directory
 mkdir -p /gnucash
-if [ ! -d /gnucash/.git ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
+if [ -z "$(ls -A /gnucash)" ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
     git clone -b "$GNC_GIT_CHECKOUT" https://github.com/Gnucash/gnucash.git
 fi
 
@@ -18,13 +39,13 @@ mkdir -p "$HOME"/.local/share
 # build and run unit tests
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then
     cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/
-    make -j 4
-    make check || /afterfailure
+    { make -j 4 && [ "$GNC_INSTALL" = "1" ]; } && make install
+    make check || . /afterfailure
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
-    # TODO remove debug build type
+    # TODO configure and test a Ninja build (e.g. Alpine); reconcile debug build type and python
     cmake -DWITH_PYTHON=ON -DCMAKE_BUILD_TYPE=debug -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
-    ninja
-    ninja check || /afterfailure;
+    { ninja && [ "$GNC_INSTALL" = "1" ]; } && make install
+    ninja check || . /afterfailure
 else
     echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
 fi
@@ -33,6 +54,10 @@ echo "*******************"
 echo "* Build concluded *"
 echo "*******************"
 
-# prevents container from immediately exiting after build
+if [ "$EXIT_AFTER_TEST" = "1" ]; then
+    exit 0
+fi
+
+# prevent container from immediately exiting
 #exec tail -f /dev/null
 exec bash
