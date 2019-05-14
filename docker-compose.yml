@@ -89,3 +89,25 @@ services:
     #volumes:
     #  - ./gnucash:/gnucash
     #  - ./build:/build
+
+  debian-9:
+    build:
+      context: .
+      dockerfile: debian.dockerfile
+      args:
+        - OS_DIST=debian
+        - OS_TAG=9
+    image: gnucashbuild:debian-9
+    container_name: gnucashbuild-debian-9
+    network_mode: host # using host network to ease XWindows connectivity
+    init: true # compose file version 2.2-2.4 or 3.7+ needed
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - GNC_GIT_CHECKOUT=3.5
+      #- BUILDTYPE=stop
+      #- DISPLAY=192.168.2.23:0.0
+    #volumes:
+    #  - ./gnucash:/gnucash
+    #  - ./build:/build
