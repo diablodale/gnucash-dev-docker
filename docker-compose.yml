@@ -137,3 +137,20 @@ services:
     environment:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
       - GNC_GIT_CHECKOUT=3.5
+
+  archlinux:
+    build:
+      context: .
+      dockerfile: arch.dockerfile
+      args:
+        - OS_DIST=archlinux/base
+        - OS_TAG=latest
+    image: gnucashbuild:archlinux
+    container_name: gnucashbuild-archlinux
+    network_mode: host
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - GNC_GIT_CHECKOUT=3.5
