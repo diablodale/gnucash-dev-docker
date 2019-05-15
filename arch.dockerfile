@@ -30,7 +30,7 @@ HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
     CMD true
 
 # setup the OS build environment; update needs to be included in installs otherwise older apt database is cached in docker layer
-RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python2 pkg-config gettext guile git ninja gtest gmock sqlite3 \
+RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python3 pkg-config gettext guile git ninja gtest gmock sqlite3 \
            webkit2gtk swig gwenhywfar aqbanking intltool libxslt postgresql-libs libmariadbclient libdbi libdbi-drivers \
            tzdata > /dev/null && \
     yes | pacman -Scc ; \
@@ -40,6 +40,9 @@ RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python2 pkg-co
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8\nde_DE.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
+
+# create python3 virtual environment
+RUN python3 -m venv /python3-venv
 
 # environment vars
 ENV LANG=${LANG:-en_US.UTF-8}

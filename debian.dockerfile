@@ -36,7 +36,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && \
     apt-get build-dep -qq gnucash > /dev/null && \
     apt-get install -qq tzdata git bash-completion make swig xsltproc texinfo ninja-build libboost-all-dev libgtk-3-dev \
-            aqbanking-tools libdbd-sqlite3 libdbd-pgsql libdbd-mysql locales dbus-x11 \
+            aqbanking-tools libdbd-sqlite3 libdbd-pgsql libdbd-mysql locales dbus-x11 python3-dev '^python3(\.4)?-venv' \
             $(apt-cache policy locales-all|grep -q "Candidate: [0-9]" && echo "locales-all") \
             cmake$(apt-cache policy cmake|grep -q "Candidate: 2" && echo 3) \
             libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.0|grep -q "Candidate: [0-9]" && echo 4 || echo 3).0-dev > /dev/null && \
@@ -46,6 +46,9 @@ RUN apt-get update -qq && \
 
 # cmake requires gtest
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
+
+# create python3 virtual environment
+RUN python3 -m venv /python3-venv
 
 # environment vars
 RUN update-locale LANG=${LANG:-en_US.UTF-8}

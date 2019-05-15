@@ -23,6 +23,9 @@ fi
 
 export TZ="Etc/UTC"
 
+# activate python3 virtual environment
+source /python3-venv/bin/activate
+
 # prepare source directory
 mkdir -p /gnucash
 if [ -z "$(ls -A /gnucash)" ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
