@@ -38,7 +38,7 @@ RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python2 pkg-co
 
 # timezone, generate locales
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8" > /etc/locale.gen && \
+    echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8\nde_DE.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 
 # environment vars

@@ -41,7 +41,7 @@ RUN apt-get update -qq && \
             cmake$(apt-cache policy cmake|grep -q "Candidate: 2" && echo 3) \
             libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.0|grep -q "Candidate: [0-9]" && echo 4 || echo 3).0-dev > /dev/null && \
     # why (re)install these two specific language-packs on Ubuntu? Perhaps parameterize locales with ARG
-    (apt-cache policy language-pack-en|grep -q "Candidate:" && apt-get --reinstall install -qq language-pack-en language-pack-fr > /dev/null || exit 0) && \
+    (apt-cache policy language-pack-en|grep -q "Candidate:" && apt-get --reinstall install -qq language-pack-en language-pack-fr language-pack-de > /dev/null || exit 0) && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 # cmake requires gtest
