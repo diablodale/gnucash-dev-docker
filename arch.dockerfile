@@ -33,12 +33,12 @@ HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
 RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python2 pkg-config gettext guile git ninja gtest gmock sqlite3 \
            webkit2gtk swig gwenhywfar aqbanking intltool libxslt postgresql-libs libmariadbclient libdbi libdbi-drivers \
            tzdata > /dev/null && \
-    ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     yes | pacman -Scc ; \
     rm -rf /tmp/*
 
-# generate locales
-RUN echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8" > /etc/locale.gen && \
+# timezone, generate locales
+RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 
 # environment vars

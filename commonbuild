@@ -42,8 +42,7 @@ if [[ "$BUILDTYPE" == "cmake-make" ]]; then
     { make -j 4 && [ "$GNC_INSTALL" = "1" ]; } && make install
     make check || . /afterfailure
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
-    # TODO configure and test a Ninja build (e.g. Alpine); reconcile debug build type and python
-    cmake -DWITH_PYTHON=ON -DCMAKE_BUILD_TYPE=debug -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
+    cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
     { ninja && [ "$GNC_INSTALL" = "1" ]; } && make install
     ninja check || . /afterfailure
 else

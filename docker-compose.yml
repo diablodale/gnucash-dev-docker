@@ -152,5 +152,5 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5

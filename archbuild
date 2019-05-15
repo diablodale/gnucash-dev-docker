@@ -24,4 +24,13 @@ fi
 # add perl script directories to path
 . /etc/profile
 
+# Enable dbus functionality with a machine-id
+dbus-uuidgen --ensure
+
+# TODO compile and install an X11-enabled dbus-launch, the package in Arch repos have X11 disabled
+# https://www.reddit.com/r/archlinux/comments/50zbdt/dbus_no_longer_compiled_with_x11_support/
+# Without this, you may get warnings on start of gnucash similar to:
+#      dconf-WARNING **: 11:45:14.006: failed to commit changes to dconf: Error spawning command
+#      line “dbus-launch --autolaunch=f8b41aabbccddee068a50123456712c2 --binary-syntax --close-stderr”: Child process exited with code 1
+
 . /commonbuild
