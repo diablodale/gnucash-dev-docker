@@ -42,10 +42,10 @@ services:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt # all gnucash build options can be set https://code.gnucash.org/wiki/Gnucash_Build_Options
       - GNC_GIT_CHECKOUT=3.5                            # gnucash git branch|commit|tag to clone and checkout; will not change already existing /build directory content
       #- BUILDTYPE=stop                                 # make build tool: 'cmake-make' or 'cmake-ninja'; or 'stop' to prevent building. Default value is specific to each OS
-      #- IGNORE_BUILD_FAILURE=1                         # ignores build errors/failures when set to 1; container's log has details
+      #- GNC_IGNORE_BUILD_FAIL=1                        # ignores build errors/failures when set to 1; container's log has details
       - GNC_INSTALL=1                                   # install gnucash using 'make install' when set to 1 and build was successful; ignores result of unit tests
-      #- EXIT_AFTER_TEST=1                              # immediately stop/exit the container with test results when set to 1; container's log has details; good for CI
-      #- DISPLAY=192.168.2.23:0.0                       # XWin setting enables running gnucash inside container and display to XWin on host or remote
+      #- GNC_EXIT_AFTER_TEST=1                          # immediately stop/exit the container with test results when set to 1; container's log has details; good for CI
+      #- DISPLAY=192.168.2.23:0.0                       # XWin setting enables running gnucash inside container and display to XWin on host/remote
     #volumes:
     #  - ./hostbuilddir:/build                          # maps host build result directory for gnucash into container for build result
     #  - ./hostgnucashsource:/gnucash                   # mounts host directory containing gnucash source into container.

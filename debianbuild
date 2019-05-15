@@ -17,7 +17,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-if [ "$IGNORE_BUILD_FAILURE" != "1" ]; then
+if [ "$GNC_IGNORE_BUILD_FAIL" != "1" ]; then
     set -e
 fi
 

@@ -17,7 +17,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-if [ "$IGNORE_BUILD_FAILURE" != "1" ]; then
+if [ "$GNC_IGNORE_BUILD_FAIL" != "1" ]; then
     set -e
 fi
 
@@ -27,7 +27,7 @@ fi
 # Enable dbus functionality with a machine-id
 dbus-uuidgen --ensure
 
-# TODO compile and install an X11-enabled dbus-launch, the package in Arch repos have X11 disabled
+# TODO compile and install an X11-enabled dbus-launch (like dbus-x11 in debian), the Arch repos have dbus X11 disabled
 # https://www.reddit.com/r/archlinux/comments/50zbdt/dbus_no_longer_compiled_with_x11_support/
 # Without this, you may get warnings on start of gnucash similar to:
 #      dconf-WARNING **: 11:45:14.006: failed to commit changes to dconf: Error spawning command
