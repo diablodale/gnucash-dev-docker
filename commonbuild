@@ -43,7 +43,7 @@ if [[ "$BUILDTYPE" == "cmake-make" ]]; then
     make check || . /afterfailure
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
     cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
-    { ninja && [ "$GNC_INSTALL" = "1" ]; } && make install
+    { ninja && [ "$GNC_INSTALL" = "1" ]; } && ninja install
     ninja check || . /afterfailure
 else
     echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
