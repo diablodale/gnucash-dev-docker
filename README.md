@@ -54,7 +54,7 @@ are the arguments and environment variables specific to this build solution.
 | GNC_GIT_CHECKOUT | Gnucash git branch, commit, tag to clone and checkout into the container's /build directory. It will abort if /build already contains files. | `GNC_GIT_CHECKOUT=3.5` |
 | BUILDTYPE | Override the default make build tool for the OS. Only `cmake-make` and `cmake-ninja` are supported. To prevent building, set to any other value, e.g. `stop`. | `BUILDTYPE=stop` |
 | GNC_IGNORE_BUILD_FAIL | Set to `1` to ignores build errors/failures. Container's log retains details. | `GNC_IGNORE_BUILD_FAIL=1` |
-| GNC_INSTALL | Set to `1` to install gnucash using 'make install'. Requires build to be successful. Ignores result of unit tests. | `GNC_INSTALL=1` |
+| GNC_INSTALL | Set to `1` to automatically install gnucash in the container after build is successful. Ignores result of unit tests. | `GNC_INSTALL=1` |
 | GNC_EXIT_AFTER_TEST | Set to `1` to immediately stop/exit container with test results. Container's log retains details. Great for CI like [Travis](https://travis-ci.org/). | `GNC_EXIT_AFTER_TEST=1` |
 | DISPLAY | Easy way to set the `DISPLAY` environment variable for X11; enables running gnucash inside container and display to XWin on host/remote. | `DISPLAY=192.168.1.5:0.0` |
 

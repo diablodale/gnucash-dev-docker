@@ -23,13 +23,12 @@ fi
 
 export TZ="Etc/UTC"
 
-# activate python3 virtual environment
-source /python3-venv/bin/activate
-
 # prepare source directory
 mkdir -p /gnucash
 if [ -z "$(ls -A /gnucash)" ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
-    git clone -b "$GNC_GIT_CHECKOUT" https://github.com/Gnucash/gnucash.git
+    git clone -n https://github.com/Gnucash/gnucash.git
+    cd /gnucash && git checkout "$GNC_GIT_CHECKOUT"
+    cd /
 fi
 
 # prepare build directory
@@ -42,7 +41,7 @@ mkdir -p "$HOME"/.local/share
 # build and run unit tests
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then
     cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/
-    { make -j 4 && [ "$GNC_INSTALL" = "1" ]; } && make install
+    { make -j $(nproc) && [ "$GNC_INSTALL" = "1" ]; } && make install
     make check || . /afterfailure
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
     cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
