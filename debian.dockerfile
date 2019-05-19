@@ -44,17 +44,21 @@ RUN apt-get update -qq && \
     (apt-cache policy language-pack-en|grep -q "Candidate:" && apt-get --reinstall install -qq language-pack-en language-pack-fr language-pack-de > /dev/null || exit 0) && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
-# cmake requires gtest
+# cmake requires gtest 1.8+
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
+ENV GTEST_ROOT=/gtest/googletest
+ENV GMOCK_ROOT=/gtest/googlemock
+
+# timezone, generate any needed locales
+RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    update-locale LANG=${LANG:-en_US.UTF-8}
+ENV LANG=${LANG:-en_US.UTF-8}
+ENV TZ=${TZ:-Etc/UTC}
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
 # environment vars
-RUN update-locale LANG=${LANG:-en_US.UTF-8}
-ENV LANG=${LANG:-en_US.UTF-8}
-ENV GTEST_ROOT=/gtest/googletest
-ENV GMOCK_ROOT=/gtest/googlemock
 ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
 
 # install startup files

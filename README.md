@@ -56,7 +56,9 @@ are the arguments and environment variables specific to this build solution.
 | GNC_IGNORE_BUILD_FAIL | Set to `1` to ignores build errors/failures. Container's log retains details. | `GNC_IGNORE_BUILD_FAIL=1` |
 | GNC_INSTALL | Set to `1` to automatically install gnucash in the container after build is successful. Ignores result of unit tests. | `GNC_INSTALL=1` |
 | GNC_EXIT_AFTER_TEST | Set to `1` to immediately stop/exit container with test results. Container's log retains details. Great for CI like [Travis](https://travis-ci.org/). | `GNC_EXIT_AFTER_TEST=1` |
-| DISPLAY | Easy way to set the `DISPLAY` environment variable for X11; enables running gnucash inside container and display to XWin on host/remote. | `DISPLAY=192.168.1.5:0.0` |
+| DISPLAY | Set `DISPLAY` environment variable for X11; enables gnucash inside container to display on host/remote X11. | `DISPLAY=192.168.1.5:0.0` |
+| LANG | Override the default locale `en_US.UTF-8`. Can be any locale that is installed inside the container. Default install includes en_US, en_GB, fr_FR, and de_DE. | `LANG=de_DE.UTF-8` |
+| TZ | Override the default timezone `Etc/UTC`. Can be any timezone identifier from tzdata in /usr/share/zoneinfo, e.g. `Japan`, `Europe/Berlin`, `Australia/Sydney`, etc. | `TZ=Australia/Sydney` |
 
 ## Volumes and Files
 

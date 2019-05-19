@@ -39,7 +39,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt # all gnucash build options can be set https://code.gnucash.org/wiki/Gnucash_Build_Options
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON # all gnucash build options can be set https://code.gnucash.org/wiki/Gnucash_Build_Options
       - GNC_GIT_CHECKOUT=3.5                            # gnucash git branch|commit|tag to clone and checkout; will not change already existing /build directory content
       #- BUILDTYPE=stop                                 # make build tool: 'cmake-make' or 'cmake-ninja'; or 'stop' to prevent building. Default value is specific to each OS
       #- GNC_IGNORE_BUILD_FAIL=1                        # ignores build errors/failures when set to 1; container's log has details
@@ -67,7 +67,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
 
   ubuntu-18.04:
@@ -84,7 +84,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
 
   ubuntu-19.04:
@@ -101,7 +101,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
 
   debian-8:
@@ -118,7 +118,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
 
   debian-9:
@@ -135,7 +135,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
 
   archlinux:
@@ -147,6 +147,23 @@ services:
         - OS_TAG=latest
     image: gnucashbuild:archlinux
     container_name: gnucashbuild-archlinux
+    network_mode: host
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
+
+  centos-7:
+    build:
+      context: .
+      dockerfile: rhel.dockerfile
+      args:
+        - OS_DIST=centos
+        - OS_TAG=7
+    image: gnucashbuild:centos-7
+    container_name: gnucashbuild-centos-7
     network_mode: host
     init: true
     tty: true
