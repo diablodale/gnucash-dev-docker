@@ -35,17 +35,17 @@ SHELL ["powershell.exe", "-Command"]
 # may need Set-ExecutionPolicy Unrestricted
 RUN Set-ExecutionPolicy RemoteSigned ; \
     iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) ; \
-    refreshenv
+    refreshenv ; \
+    mkdir C:/gcdev64 > $null
 
 #choco install msys2 -y --stoponfirstfailure --fail-on-stderr --version 20180531.0.0 -params '/InstallDir:C:\gcdev64\msys2' ; \
 RUN Write-Host "===== MSYS2 INSTALL BEGINNING =====" ; \
-    choco install 7zip.portable -y --stoponfirstfailure ; \
-    mkdir C:/gcdev64 > $null ; \
-    (New-Object System.Net.WebClient).DownloadFile('http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20181211.tar.xz', 'C:/gcdev64/msys2-base-x86_64-20181211.tar.xz') ; \
-    7z x -bd -oC:/gcdev64 C:/gcdev64/msys2-base-x86_64-20181211.tar.xz ; \
-    7z x -bd -oC:/gcdev64 C:/gcdev64/msys2-base-x86_64-20181211.tar ; \
-    mv C:/gcdev64/msys64 C:/gcdev64/msys2 ; \
-    rm C:/gcdev64/msys2-base-x86_64-20181211.* ; \
+    Import-Module "$Env:ChocolateyInstall/helpers/chocolateyInstaller.psm1" ; \
+    Get-ChocolateyWebFile -FileFullPath 'C:/gcdev64/msys2-download.tar.xz' -Url64bit 'http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20181211.tar.xz' -ChecksumType64 'sha256' -Checksum64 '5CAB863861BC9D414B4DF2CBE0B1BF8B560EB9A19AA637AFABD6F436B572F2E3' -PackageName 'msys2-gnucash' ; \
+    Get-ChocolateyUnzip -FileFullPath64 'C:/gcdev64/msys2-download.tar.xz' -Destination 'C:/gcdev64' ; \
+    Get-ChocolateyUnzip -FileFullPath64 'C:/gcdev64/msys2-download.tar' -Destination 'C:/gcdev64' ; \
+    rm 'C:/gcdev64/msys2-download.tar*' ; \
+    Get-ChildItem 'C:/gcdev64' | Where { $_.PSIsContainer } | Rename-Item -NewName 'msys2' ; \
     cd C:/gcdev64/msys2 ; \
     ./msys2_shell.cmd -defterm -no-start ; \
     Get-Process | where Path -Like 'C:\gcdev64\msys2*' | Stop-Process -Force ; \
