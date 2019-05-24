@@ -1,0 +1,8 @@
+.*
+*.md
+LICENSE
+docker-compose.yml
+Dockerfile
+*.dockerfile
+
+testdata

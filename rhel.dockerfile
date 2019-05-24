@@ -29,7 +29,7 @@ VOLUME [ "/gnucash", "/build" ]
 HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
     CMD true
 
-# setup the OS build environment; update needs to be included in installs otherwise older apt database is cached in docker layer
+# setup the OS build environment; update needs to be included in installs otherwise older package database is cached in docker layer
 RUN set -x; \
     yum --quiet --assumeyes install epel-release && \
     yum --quiet clean all && \
