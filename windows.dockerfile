@@ -71,10 +71,20 @@ RUN Set-ExecutionPolicy RemoteSigned ; \
     choco install innosetup -y --version 5.5.9.20171105 --installargs '/dir=""""""""C:\Program Files (x86)\inno""""""""' ; \
     Write-Host "There may be a delay at the end of this Docker build stage..."
 
-RUN (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/Gnucash/gnucash-on-windows/master/setup-mingw64.ps1', '/setup-mingw64.ps1') ; \
-    [io.file]::WriteAllBytes('/setup-mingw64.ps1.commitsha',(Invoke-WebRequest -UseBasicParsing -Uri 'https://api.github.com/repos/Gnucash/gnucash-on-windows/commits/master' -Headers @{'Accept'='application/vnd.github.VERSION.sha'}).Content) ; \
+# use chosen git commit of gnucash-on-windows build scripts; default is master
+ARG GNC_WINBUILDER_GIT_CHECKOUT=master
+RUN mkdir C:/gcdev64/src ; \
+    C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'pacman --noconfirm -S git && git clone -n https://github.com/Gnucash/gnucash-on-windows.git /c/gcdev64/src/gnucash-on-windows.git' ; \
+    C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git checkout $GNC_WINBUILDER_GIT_CHECKOUT' ; \
+    copy C:/gcdev64/src/gnucash-on-windows.git/setup-mingw64.ps1 /setup-mingw64.ps1 ; \
+    echo "$Env:GNC_WINBUILDER_GIT_CHECKOUT" > C:/setup-mingw64.ps1.commitsha ; \
     /setup-mingw64.ps1 -target_dir 'C:\gcdev64' -msys2_root 'C:\gcdev64\msys2' ; \
     Write-Host 'There may be a long delay at the end of this Docker build stage...'
+
+# fix fragile patching; see commits dbb4861067b93c97dbc0f5ee7294ab34144fb509, 4ba69dcd96f307cd54f06c9d2a1310c8ae419116, da23962d999aad3a1e248fac0ccb309b5deded8f
+# if patch was already applied, it will fail yet continue the build
+RUN C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd $(dirname $(pacman -Qql $(pacman -Qqe | grep ''cmake$'') | grep -i ''FindSWIG\\.cmake'')) && /usr/bin/patch -f -i /c/gcdev64/src/gnucash-on-windows.git/patches/FindSWIG.patch' ; \
+    exit 0
 
 #RUN Write-Host 'Fixing bug about patch locations https://bugs.gnucash.org/show_bug.cgi?id=797252' ; \
 #    C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git pull && git checkout 4199156cc51d66ae31a4749be718d469dcd25b29' ; \
@@ -83,7 +93,10 @@ RUN (New-Object System.Net.WebClient).DownloadFile('https://raw.githubuserconten
 # build environment is now ready to use. Open an MSys2/mingw32 shell from the start menu, cd to /C/gcdev64, and run
 #    jhbuild -f src/gnucash-on-windows.git/jhbuildrc build
 #    Note that the build will not work with the plain MSys2 shell!
-# RUN C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'cd /C/gcdev64 && jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
+# can use TARGET=gnucash-maint jhbuild -f jhbuildrc build to build the maint branch, substitute gnucash-master for gnucash-maint if you want to build the master branch.
+# Unsure if the build system will allow a commit or tag there (rather than just branches)
+# RUN C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'cd /C/gcdev64 && TARGET=gnucash-${GNC_GIT_CHECKOUT} jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
+# C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'cd /C/gcdev64 && TARGET=gnucash-3.5 jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
 #
 # environment vars
 #ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
