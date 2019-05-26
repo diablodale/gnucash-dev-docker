@@ -71,9 +71,20 @@ RUN Set-ExecutionPolicy RemoteSigned ; \
     choco install innosetup -y --version 5.5.9.20171105 --installargs '/dir=""""""""C:\Program Files (x86)\inno""""""""' ; \
     Write-Host "There may be a delay at the end of this Docker build stage..."
 
-#RUN DISM /Online /Add-Capability /CapabilityName:"ServerCore.AppCompatibility~~~~0.0.1.0"
-#Invoke-WebRequest -Uri https://raw.githubusercontent.com/Gnucash/gnucash-on-windows/master/setup-mingw64.ps1 -OutFile /setup-mingw64.ps1 ; \
+RUN (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/Gnucash/gnucash-on-windows/master/setup-mingw64.ps1', '/setup-mingw64.ps1') ; \
+    [io.file]::WriteAllBytes('/setup-mingw64.ps1.commitsha',(Invoke-WebRequest -UseBasicParsing -Uri 'https://api.github.com/repos/Gnucash/gnucash-on-windows/commits/master' -Headers @{'Accept'='application/vnd.github.VERSION.sha'}).Content) ; \
+    /setup-mingw64.ps1 -target_dir 'C:\gcdev64' -msys2_root 'C:\gcdev64\msys2' ; \
+    Write-Host 'There may be a long delay at the end of this Docker build stage...'
 
+#RUN Write-Host 'Fixing bug about patch locations https://bugs.gnucash.org/show_bug.cgi?id=797252' ; \
+#    C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git pull && git checkout 4199156cc51d66ae31a4749be718d469dcd25b29' ; \
+#    ((Get-Content -path 'C:/gcdev64/src/gnucash-on-windows.git/gnucash.modules' -Raw) -ireplace 'patches/patches','patches') | Set-Content -Path 'C:/gcdev64/src/gnucash-on-windows.git/gnucash.modules'
+
+# build environment is now ready to use. Open an MSys2/mingw32 shell from the start menu, cd to /C/gcdev64, and run
+#    jhbuild -f src/gnucash-on-windows.git/jhbuildrc build
+#    Note that the build will not work with the plain MSys2 shell!
+# RUN C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'cd /C/gcdev64 && jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
+#
 # environment vars
 #ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
 

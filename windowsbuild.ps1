@@ -24,4 +24,7 @@
 #    export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
 #fi
 
+# pull updates for gnucash-on-windows; setup-mingw64.ps1 in the previous step likely persisted an old commit
+C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git pull'
+
 powershell
