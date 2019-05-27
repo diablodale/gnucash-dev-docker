@@ -5,7 +5,7 @@ Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
 
 ## Setup
 
-1. You need a running Docker host/engine on a Linux-based OS.
+1. You need a Docker host/engine on a Linux-based OS.
    Other host OS are not yet supported. Docker has free and easy instructions at
    <https://docs.docker.com/install/>
 2. Strongly recommend you have `docker-compose` installed
@@ -38,8 +38,11 @@ export DISPLAY=mycomputer:0.0   # replace mycomputer with hostname or IP address
 ## Build Choices and Options
 
 The Dockerfiles can be used direct with `docker run` or more easily with
-`docker-compose`. The `docker-compose.yml` included already has support for major
-releases of Ubuntu, Debian, and Arch Linux. Inspect this file to see how new
+`docker-compose`. The `docker-compose.yml` included is pre-configured for major
+releases of **Ubuntu, Debian, Arch, and openSUSE Linux**. Use the same *Quick Start*
+command above with any of the OS in the file.
+
+You can automate the install and have it appear on any desktop running X11 by setting `GNC_INSTALL` and `DISPLAY`. Inspect this file to see how new
 operating systems can be added or build options changed to meet your needs.
 
 `docker-compose` documentation at <https://docs.docker.com/compose/> can help you
@@ -55,7 +58,7 @@ are the arguments and environment variables specific to this build solution.
 | BUILDTYPE | Override the default make build tool for the OS. Only `cmake-make` and `cmake-ninja` are supported. To prevent building, set to any other value, e.g. `stop`. | `BUILDTYPE=stop` |
 | GNC_IGNORE_BUILD_FAIL | Set to `1` to ignores build errors/failures. Container's log retains details. | `GNC_IGNORE_BUILD_FAIL=1` |
 | GNC_INSTALL | Set to `1` to automatically install gnucash in the container after build is successful. Ignores result of unit tests. | `GNC_INSTALL=1` |
-| GNC_EXIT_AFTER_TEST | Set to `1` to immediately stop/exit container with test results. Container's log retains details. Great for CI like [Travis](https://travis-ci.org/). | `GNC_EXIT_AFTER_TEST=1` |
+| GNC_EXIT_AFTER_TEST | Set to `1` to immediately stop/exit container with test results. Container's log retains details. Good for DevOps and CI like [Travis](https://travis-ci.org/). | `GNC_EXIT_AFTER_TEST=1` |
 | DISPLAY | Set `DISPLAY` environment variable for X11; enables gnucash inside container to display on host/remote X11. | `DISPLAY=192.168.1.5:0.0` |
 | LANG | Override the default locale `en_US.UTF-8`. Can be any locale that is installed inside the container. Default install includes en_US, en_GB, fr_FR, and de_DE. | `LANG=de_DE.UTF-8` |
 | TZ | Override the default timezone `Etc/UTC`. Can be any timezone identifier from tzdata in /usr/share/zoneinfo, e.g. `Japan`, `Europe/Berlin`, `Australia/Sydney`, etc. | `TZ=Australia/Sydney` |
@@ -102,9 +105,7 @@ volumes:
 
 ## Technical Notes
 
-* docker-compose file version 2.4 is used to enable several of the below features
-* `network_mode: host` is used to ease remote X11 use. Otherwise, an isolated
-  docker network works just as well.
+* docker-compose file version 2.4 enables several of the below features
 * `init: true` provides a init process handler for clean startup/shutdown
 * `tty: true` and `stdin_open: true` are set to support running bash at the
   end of the build process
