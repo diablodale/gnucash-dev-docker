@@ -34,7 +34,6 @@ services:
         - OS_TAG=14.04   # dockerhub tag from which thecontainer is based
     image: gnucashbuild:ubuntu-14.04
     container_name: gnucashbuild-ubuntu-14.04
-    network_mode: host   # host network enables easy XWin connectivity
     init: true
     tty: true
     stdin_open: true
@@ -62,7 +61,6 @@ services:
         - OS_TAG=16.04
     image: gnucashbuild:ubuntu-16.04
     container_name: gnucashbuild-ubuntu-16.04
-    network_mode: host
     init: true
     tty: true
     stdin_open: true
@@ -79,7 +77,6 @@ services:
         - OS_TAG=18.04
     image: gnucashbuild:ubuntu-18.04
     container_name: gnucashbuild-ubuntu-18.04
-    network_mode: host
     init: true
     tty: true
     stdin_open: true
@@ -96,7 +93,6 @@ services:
         - OS_TAG=19.04
     image: gnucashbuild:ubuntu-19.04
     container_name: gnucashbuild-ubuntu-19.04
-    network_mode: host
     init: true
     tty: true
     stdin_open: true
@@ -113,7 +109,6 @@ services:
         - OS_TAG=8
     image: gnucashbuild:debian-8
     container_name: gnucashbuild-debian-8
-    network_mode: host
     init: true
     tty: true
     stdin_open: true
@@ -130,7 +125,6 @@ services:
         - OS_TAG=9
     image: gnucashbuild:debian-9
     container_name: gnucashbuild-debian-9
-    network_mode: host
     init: true
     tty: true
     stdin_open: true
@@ -147,7 +141,6 @@ services:
         - OS_TAG=latest
     image: gnucashbuild:archlinux
     container_name: gnucashbuild-archlinux
-    network_mode: host
     init: true
     tty: true
     stdin_open: true
@@ -164,7 +157,38 @@ services:
         - OS_TAG=7
     image: gnucashbuild:centos-7
     container_name: gnucashbuild-centos-7
-    network_mode: host
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
+
+  opensuse-15.0:
+    build:
+      context: .
+      dockerfile: suse.dockerfile
+      args:
+        - OS_DIST=opensuse/leap
+        - OS_TAG=15.0
+    image: gnucashbuild:opensuse-15.0
+    container_name: gnucashbuild-opensuse-15.0
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
+
+  opensuse-15.1:
+    build:
+      context: .
+      dockerfile: suse.dockerfile
+      args:
+        - OS_DIST=opensuse/leap
+        - OS_TAG=15.1
+    image: gnucashbuild:opensuse-15.1
+    container_name: gnucashbuild-opensuse-15.1
     init: true
     tty: true
     stdin_open: true

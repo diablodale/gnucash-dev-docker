@@ -21,8 +21,6 @@ if [ "$GNC_IGNORE_BUILD_FAIL" != "1" ]; then
     set -e
 fi
 
-export TZ="Etc/UTC"
-
 # prepare source directory
 mkdir -p /gnucash
 if [ -z "$(ls -A /gnucash)" ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
