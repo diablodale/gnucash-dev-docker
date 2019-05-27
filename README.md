@@ -39,7 +39,7 @@ export DISPLAY=mycomputer:0.0   # replace mycomputer with hostname or IP address
 
 The Dockerfiles can be used direct with `docker run` or more easily with
 `docker-compose`. The `docker-compose.yml` included is pre-configured for major
-releases of **Ubuntu, Debian, Arch, and openSUSE Linux**. Use the same *Quick Start*
+releases of **Ubuntu, Debian, Arch, CentOS, and openSUSE Linux**. Use the same *Quick Start*
 command above with any of the OS in the file.
 
 You can automate the install and have it appear on any desktop running X11 by setting `GNC_INSTALL` and `DISPLAY`. Inspect this file to see how new
