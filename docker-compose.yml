@@ -1,4 +1,4 @@
-# gnucash-dev-docker: Docker containers for automated OS setup and dev/build environ for gnucash v3+ binaries and docs
+# gnucash-dev-docker: Docker containers for automated OS setup and dev/build environ for GnuCash v3+ binaries and docs
 # Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
 
 # This program is free software; you can redistribute it and/or modify
@@ -19,9 +19,9 @@
 # Usage:
 #   docker-compose up -d [servicename, ...]
 #
-# If you supply no servicenames, then docker-compose will attempt to start all build configurations below.
-# This template (and the matching 'docker run' settings) can be adapted to common needs using several settings.
-# These settings are described in the first container below as a working example.
+# If you supply no servicenames, then docker-compose will attempt to start all configurations below.
+# This template (and the matching 'docker run' settings) can be adapted to common needs using 'build args' and 'environment' settings.
+# These are described in the Ubuntu 18.04 container below as a working example.
 version: '2.4'
 services:
 
@@ -30,27 +30,16 @@ services:
       context: .
       dockerfile: debian.dockerfile
       args:
-        - OS_DIST=ubuntu # dockerhub distribution from which the container is based
-        - OS_TAG=14.04   # dockerhub tag from which thecontainer is based
+        - OS_DIST=ubuntu
+        - OS_TAG=14.04
     image: gnucashbuild:ubuntu-14.04
     container_name: gnucashbuild-ubuntu-14.04
     init: true
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON # all gnucash build options can be set https://code.gnucash.org/wiki/Gnucash_Build_Options
-      - GNC_GIT_CHECKOUT=3.5                            # gnucash git branch|commit|tag to clone and checkout; will not change already existing /build directory content
-      #- BUILDTYPE=stop                                 # make build tool: 'cmake-make' or 'cmake-ninja'; or 'stop' to prevent building. Default value is specific to each OS
-      #- GNC_IGNORE_BUILD_FAIL=1                        # ignores build errors/failures when set to 1; container's log has details
-      - GNC_INSTALL=1                                   # install gnucash using 'make install' when set to 1 and build was successful; ignores result of unit tests
-      #- GNC_EXIT_AFTER_TEST=1                          # immediately stop/exit the container with test results when set to 1; container's log has details; good for CI
-      #- DISPLAY=192.168.2.23:0.0                       # XWin setting enables running gnucash inside container and display to XWin on host/remote
-    #volumes:
-    #  - ./hostbuilddir:/build                          # maps host build result directory for gnucash into container for build result
-    #  - ./hostgnucashsource:/gnucash                   # mounts host directory containing gnucash source into container.
-                                                        #   Caution: The gnucash build process alters this source directory. If you mount this
-                                                        #   directory from the host, it must be read+write. If you mount this same directory across
-                                                        #   multiple containers, you may encounter difficult to resolve problems.
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
 
   ubuntu-16.04:
     build:
@@ -73,16 +62,27 @@ services:
       context: .
       dockerfile: debian.dockerfile
       args:
-        - OS_DIST=ubuntu
-        - OS_TAG=18.04
+        - OS_DIST=ubuntu # dockerhub distribution from which the container is based
+        - OS_TAG=18.04   # dockerhub tag from which the container is based
     image: gnucashbuild:ubuntu-18.04
     container_name: gnucashbuild-ubuntu-18.04
     init: true
     tty: true
     stdin_open: true
     environment:
-      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
-      - GNC_GIT_CHECKOUT=3.5
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON # all GnuCash build options can be set https://code.gnucash.org/wiki/Gnucash_Build_Options
+      - GNC_GIT_CHECKOUT=3.5                            # GnuCash git branch|commit|tag to clone and checkout; will not change already existing /build directory content
+      #- BUILDTYPE=stop                                 # make build tool: 'cmake-make' or 'cmake-ninja'; or 'stop' to prevent building. Default value is specific to each OS
+      #- GNC_IGNORE_BUILD_FAIL=1                        # ignores build errors/failures when set to 1; container's log has details
+      - GNC_INSTALL=1                                   # install GnuCash using 'make install' when set to 1 and build was successful; ignores result of unit tests
+      #- GNC_EXIT_AFTER_TEST=1                          # immediately stop/exit the container with test results when set to 1; container's log has details; good for CI
+      #- DISPLAY=192.168.2.23:0.0                       # X11 setting to run GnuCash inside container and display remotely to X11 on host or another computer
+    #volumes:
+    #  - ./hostbuilddir:/build                          # maps host build result directory for GnuCash into container for build result
+    #  - ./hostgnucashsource:/gnucash                   # mounts host directory containing GnuCash source into container.
+                                                        #   Caution: The GnuCash build process alters this source directory. If you mount this
+                                                        #   directory from the host, it must be read+write. If you mount this same directory across
+                                                        #   multiple containers, you may encounter difficult to resolve problems.
 
   ubuntu-19.04:
     build:
