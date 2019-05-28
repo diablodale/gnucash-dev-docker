@@ -17,8 +17,8 @@
 
 
 # supports Debian, Ubuntu; might support other debian-based distributions
-ARG OS_DIST
-ARG OS_TAG
+ARG OS_DIST=debian
+ARG OS_TAG=9
 FROM $OS_DIST:$OS_TAG
 
 # volume map these to host volumes, else all source and build results will remain in container
@@ -46,20 +46,21 @@ RUN apt-get update -qq && \
 
 # cmake requires gtest 1.8+
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
-ENV GTEST_ROOT=/gtest/googletest
-ENV GMOCK_ROOT=/gtest/googlemock
+ENV GTEST_ROOT=/gtest/googletest \
+    GMOCK_ROOT=/gtest/googlemock
 
 # timezone, generate any needed locales
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     update-locale LANG=${LANG:-en_US.UTF-8}
-ENV LANG=${LANG:-en_US.UTF-8}
-ENV TZ=${TZ:-Etc/UTC}
+ENV LANG=${LANG:-en_US.UTF-8} \
+    TZ=${TZ:-Etc/UTC}
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
+ENV BUILDTYPE=${BUILDTYPE:-cmake-make} \
+    BASH_ENV=~/.bashrc
 
 # install startup files
 COPY commonbuild afterfailure debianbuild /

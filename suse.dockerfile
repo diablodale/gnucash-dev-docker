@@ -46,14 +46,15 @@ RUN zypper -n refresh && \
     echo $PKG_ALL | xargs zypper -n install
 
 # timezone, generate any needed locales
-ENV LANG=${LANG:-en_US.UTF-8}
-ENV TZ=${TZ:-Etc/UTC}
+ENV LANG=${LANG:-en_US.UTF-8} \
+    TZ=${TZ:-Etc/UTC}
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
+ENV BUILDTYPE=${BUILDTYPE:-cmake-make} \
+    BASH_ENV=~/.bashrc
 
 # install startup files
 COPY commonbuild afterfailure susebuild /

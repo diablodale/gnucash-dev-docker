@@ -29,6 +29,16 @@ if [ -z "$(ls -A /gnucash)" ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
     cd /
 fi
 
+# patch CMakefile to remove forced 'mt' in Boost library pathname search; it only affects the file search, not Boost functionality
+# https://askubuntu.com/questions/486006/cannot-find-boost-thread-mt-library?answertab=votes#tab-top
+# necessary for OS (e.g. CentOS) that have non-standard Boost library pathnames
+sed -i -e '/Boost_USE_MULTITHREADED ON/c #removed problematic Boost_USE_MULTITHREADED ON' /gnucash/CMakeLists.txt
+
+# enables minimal translation support when OS has gettext < 0.19.6
+if [ $(((echo '0.19.6'; gettext --version | head -1 | grep -o -E '\b[0-9.]{3,}\b') | sort -V) | head -1) != "0.19.6" ]; then
+    export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
+fi
+
 # prepare build directory
 mkdir -p /build
 cd /build

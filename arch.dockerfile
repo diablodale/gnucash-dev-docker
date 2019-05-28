@@ -17,8 +17,8 @@
 
 
 # supports Arch Linux
-ARG OS_DIST
-ARG OS_TAG
+ARG OS_DIST=archlinux/base
+ARG OS_TAG=latest
 FROM $OS_DIST:$OS_TAG
 
 # volume map these to host volumes, else all source and build results will remain in container
@@ -40,14 +40,15 @@ RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python3 python
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8\nde_DE.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
-ENV LANG=${LANG:-en_US.UTF-8}
-ENV TZ=${TZ:-Etc/UTC}
+ENV LANG=${LANG:-en_US.UTF-8} \
+    TZ=${TZ:-Etc/UTC}
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-ninja}
+ENV BUILDTYPE=${BUILDTYPE:-cmake-ninja} \
+    BASH_ENV=~/.bashrc
 
 # install startup files
 COPY commonbuild afterfailure archbuild /

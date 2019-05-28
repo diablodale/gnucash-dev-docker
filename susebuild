@@ -21,9 +21,4 @@ if [ "$GNC_IGNORE_BUILD_FAIL" != "1" ]; then
     set -e
 fi
 
-# enables minimal translation support when OS has gettext < 0.19.6
-if ! zypper -n install --dry-run 'gettext-runtime>=0.19.6' &> /dev/null; then
-    export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
-fi
-
 . /commonbuild

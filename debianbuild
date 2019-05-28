@@ -21,9 +21,4 @@ if [ "$GNC_IGNORE_BUILD_FAIL" != "1" ]; then
     set -e
 fi
 
-# enables minimal translation support when OS has gettext < 0.19.6
-if dpkg --compare-versions "$(dpkg-query --showformat='${Version}' --show gettext 2> /dev/null)" lt "0.19.6"; then
-    export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
-fi
-
 . /commonbuild

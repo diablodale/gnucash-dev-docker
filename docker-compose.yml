@@ -195,3 +195,51 @@ services:
     environment:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
+
+  fedora-28:
+    build:
+      context: .
+      dockerfile: rhel.dockerfile
+      args:
+        - OS_DIST=fedora
+        - OS_TAG=28
+    image: gnucashbuild:fedora-28
+    container_name: gnucashbuild-fedora-28
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
+
+  fedora-29:
+    build:
+      context: .
+      dockerfile: rhel.dockerfile
+      args:
+        - OS_DIST=fedora
+        - OS_TAG=29
+    image: gnucashbuild:fedora-29
+    container_name: gnucashbuild-fedora-29
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
+
+  fedora-30:
+    build:
+      context: .
+      dockerfile: rhel.dockerfile
+      args:
+        - OS_DIST=fedora
+        - OS_TAG=30
+    image: gnucashbuild:fedora-30
+    container_name: gnucashbuild-fedora-30
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
