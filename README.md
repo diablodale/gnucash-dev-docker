@@ -1,6 +1,7 @@
 # gnucash-dev-docker
 
-Docker containers for automated OS setup, build config, compile, and test for [GnuCash](https://www.gnucash.org/) v3+ binaries and docs  
+Docker containers for automated OS setup, build config, compile, test, and install
+for [GnuCash](https://www.gnucash.org/) v3+ binaries and docs  
 Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
 
 ## Setup
@@ -15,7 +16,8 @@ Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
 ## Quick Start Example
 
 In the folder containing these files, run the following command. This will start
-a Ubuntu 18.04 container that will configure, compile, test, and install GnuCash all safely within the container.
+a Ubuntu 18.04 container that will configure, compile, test, and install GnuCash
+all safely within the container.
 
 ```bash
 docker-compose up -d ubuntu-18.04
@@ -37,11 +39,12 @@ export DISPLAY=mycomputer:0.0   # replace mycomputer with hostname or IP address
 ## Build Choices and Options
 
 The Dockerfiles can be used direct with `docker run` or more easily with
-`docker-compose`. The `docker-compose.yml` included is pre-configured for major
-releases of **Ubuntu, Debian, Arch, CentOS, Fedora, and openSUSE Linux**. Use the same *Quick Start*
+`docker-compose`. The `docker-compose.yml` included is configured for major releases
+of **Ubuntu, Debian, Arch, CentOS, Fedora, and openSUSE Linux**. Use the same *Quick Start*
 command above with any of the OS in the file.
 
-You can automate the install and have it appear on any desktop running X11 by setting `GNC_INSTALL` and `DISPLAY`. Inspect this file to see how new
+You can automate the install and have it appear on any desktop running X11
+by setting `GNC_INSTALL` and `DISPLAY`. Inspect this file to see how new
 operating systems can be added or build options changed to meet your needs.
 
 `docker-compose` documentation at <https://docs.docker.com/compose/> can help you
