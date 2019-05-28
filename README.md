@@ -28,7 +28,7 @@ Do you have a computer with X11 and allow remote X11 applications?
 If yes, you can run your newly compiled GnuCash with the following commands.
 
 ```bash
-docker run -ti gnucashbuild-ubuntu-18.04 bash # after this, you are inside the container
+docker exec -ti gnucashbuild-ubuntu-18.04 bash # after this, you are inside the container
 cd /opt/bin
 export DISPLAY=mycomputer:0.0   # replace mycomputer with hostname or IP address
 ./gnucash
@@ -52,7 +52,7 @@ are the arguments and environment variables specific to this build solution.
 | :---   | :---        | :---    |
 | OS_DIST | Docker image name | `OS_DIST=ubuntu` |
 | OS_TAG | Version of Docker image | `OS_DIST=18.04` |
-| PLATFORM_CMAKE_OPTS | [Gnucash Build Options](https://code.gnucash.org/wiki/Gnucash_Build_Options) | `-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON` |
+| PLATFORM_CMAKE_OPTS | [Gnucash Build Options](https://code.gnucash.org/wiki/Gnucash_Build_Options) separated by spaces| `-DWITH_PYTHON=ON` |
 | GNC_GIT_CHECKOUT | GnuCash git branch, commit, tag to clone and checkout into the container's /build directory. It will abort if /build already contains files. | `GNC_GIT_CHECKOUT=3.5` |
 | BUILDTYPE | Override the default make build tool for the OS. Only `cmake-make` and `cmake-ninja` are supported. To prevent building, set to any other value, e.g. `stop`. | `BUILDTYPE=stop` |
 | GNC_IGNORE_BUILD_FAIL | Set to `1` to ignores build errors/failures. Container's log retains details. | `GNC_IGNORE_BUILD_FAIL=1` |
