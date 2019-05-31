@@ -26,10 +26,22 @@
 # view all compiler defines ==> C:/gcdev64/msys2/msys2_shell.cmd -mingw32 -defterm -no-start -c 'gcc -dM -E - < /dev/null|grep -i ming'
 # for isolating build issues    C:/gcdev64/msys2/msys2_shell.cmd -mingw32 -defterm -no-start -c 'g++ -dM -E -x c++ - < /dev/null|grep -i ming'
 
-if ($Env:BUILDTYPE -ne 'stop') {
+$msys2_shell_params = @(
+    '-defterm',
+    '-no-start'
+)
+if ((! [string]::IsNullOrEmpty($Env:GNC_WINBUILDER_x86_64)) -and ($Env:GNC_WINBUILDER_x86_64.Trim() -imatch '(1|true|yes|on|enabled|64|mingw64)')) {
+    $msys2_shell_params += '-mingw64'
+}
+else
+{
+    $msys2_shell_params += '-mingw32'
+}
+
+if ($Env:BUILDTYPE -ine 'stop') {
     # build GnuCash on Windows
     # BUGBUG jhbuild only supports git TARGETs of branches and tags (no commits)
-    C:/gcdev64/msys2/msys2_shell.cmd -mingw32 -defterm -no-start -c '[ -d "/C/gcdev64/src/gnucash-on-windows.git" ] && cd /C/gcdev64 && TARGET=gnucash-${GNC_GIT_CHECKOUT} jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
+    C:/gcdev64/msys2/msys2_shell.cmd @msys2_shell_params -c '[ -d "/C/gcdev64/src/gnucash-on-windows.git" ] && cd /C/gcdev64 && TARGET=gnucash-${GNC_GIT_CHECKOUT} jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
 }
 
 echo "`nCAUTION: You are at the top process of this Docker container"

@@ -72,14 +72,14 @@ RUN Set-ExecutionPolicy RemoteSigned; `
         }; `
         cd C:/gcdev64/msys2; `
         ./msys2_shell.cmd -defterm -no-start; `
-        Get-Process | where Path -Like 'C:\gcdev64\msys2*' | Stop-Process -Force; `
+        Get-Process | where Path -ilike 'C:\gcdev64\msys2*' | Stop-Process -Force; `
         ./msys2_shell.cmd -defterm -no-start -c 'pacman-key --init && pacman-key --populate msys2 && pacman-key --refresh-keys'; `
         while (!$done) { `
             Write-Host """"===== MSYS2 UPGRADE STAGE $((++$i)) =====""""; `
             ./msys2_shell.cmd -defterm -no-start -c 'pacman --noconfirm -Syuu | tee /init_update.log'; `
             $done = (Get-Content ./init_update.log) -match 'there is nothing to do' | Measure-Object | ForEach-Object { $_.Count -eq 2 }; `
             $done = $done -or ($i -ge 5); `
-            Get-Process | where Path -Like 'C:\gcdev64\msys2*' | Stop-Process -Force; `
+            Get-Process | where Path -ilike 'C:\gcdev64\msys2*' | Stop-Process -Force; `
         }; `
         rm ./init_update.log; `
     Write-Host '===== MSYS2 INSTALL FINISHED ====='; `
@@ -90,6 +90,7 @@ RUN Set-ExecutionPolicy RemoteSigned; `
 # use chosen git commit of gnucash-on-windows build scripts
 ARG GNC_WINBUILDER_GIT_URI=https://github.com/Gnucash/gnucash-on-windows.git
 ARG GNC_WINBUILDER_GIT_CHECKOUT=master
+ARG GNC_WINBUILDER_x86_64
 RUN if ($Env:GNC_WINBUILDER_GIT_CHECKOUT -notlike '* *') { `
         mkdir C:/gcdev64/src; `
         C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'pacman --noconfirm -S git && git clone -n $GNC_WINBUILDER_GIT_URI /c/gcdev64/src/gnucash-on-windows.git'; `
@@ -100,6 +101,9 @@ RUN if ($Env:GNC_WINBUILDER_GIT_CHECKOUT -notlike '* *') { `
             target_dir = 'C:\gcdev64'; `
             msys2_root = 'C:\gcdev64\msys2'; `
         }; `
+        if (! [string]::IsNullOrEmpty($Env:GNC_WINBUILDER_x86_64)) { `
+            $bootstrap_params.x86_64 = $Env:GNC_WINBUILDER_x86_64.Trim() -imatch '(1|true|yes|on|enabled|64|mingw64)'; `
+        }; `
         if (! [string]::IsNullOrEmpty($Env:GNC_WINBUILDER_MSYS2_MIRROR)) { `
             $bootstrap_params.preferred_mirror = $Env:GNC_WINBUILDER_MSYS2_MIRROR.TrimEnd('/'); `
         }; `
@@ -109,6 +113,7 @@ RUN if ($Env:GNC_WINBUILDER_GIT_CHECKOUT -notlike '* *') { `
 
 # environment vars
 ENV GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT:-3.5}
+ENV GNC_WINBUILDER_x86_64=${GNC_WINBUILDER_x86_64:-false}
 
 # install startup files
 COPY windowsbuild.ps1 /
