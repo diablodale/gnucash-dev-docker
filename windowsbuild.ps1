@@ -15,16 +15,25 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# IF %GNC_IGNORE_BUILD_FAIL% NEQ 1 (
-    Write-Host "GNC_IGNORE_BUILD_FAIL not yet supported"
-# )
+
+#Write-Host "GNC_IGNORE_BUILD_FAIL not yet supported"
 
 # enables minimal translation support when OS has gettext < 0.19.6
-#if ! yum -q install 'gettext >= 0.19.6' &> /dev/null; then
-#    export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
-#fi
+# if ! yum -q install 'gettext >= 0.19.6' &> /dev/null; then
+#     export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
+# fi
 
-# pull updates for gnucash-on-windows; setup-mingw64.ps1 in the previous step likely persisted an old commit
-C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git pull'
+# view all compiler defines ==> C:/gcdev64/msys2/msys2_shell.cmd -mingw32 -defterm -no-start -c 'gcc -dM -E - < /dev/null|grep -i ming'
+# for isolating build issues    C:/gcdev64/msys2/msys2_shell.cmd -mingw32 -defterm -no-start -c 'g++ -dM -E -x c++ - < /dev/null|grep -i ming'
 
-powershell
+if ($Env:BUILDTYPE -ne 'stop') {
+    # build GnuCash on Windows
+    # BUGBUG jhbuild only supports git TARGETs of branches and tags (no commits)
+    C:/gcdev64/msys2/msys2_shell.cmd -mingw32 -defterm -no-start -c '[ -d "/C/gcdev64/src/gnucash-on-windows.git" ] && cd /C/gcdev64 && TARGET=gnucash-${GNC_GIT_CHECKOUT} jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
+}
+
+echo "`nCAUTION: You are at the top process of this Docker container"
+echo "If you 'exit' from here, the container will stop"
+echo "You can detach from the container and leave it running using the CTRL-p CTRL-q key sequence"
+echo "https://docs.docker.com/engine/reference/commandline/attach/`n"
+powershell.exe -NoExit

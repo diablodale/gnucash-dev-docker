@@ -90,35 +90,26 @@ RUN Set-ExecutionPolicy RemoteSigned; `
 # use chosen git commit of gnucash-on-windows build scripts
 ARG GNC_WINBUILDER_GIT_URI=https://github.com/Gnucash/gnucash-on-windows.git
 ARG GNC_WINBUILDER_GIT_CHECKOUT=master
-RUN mkdir C:/gcdev64/src; `
-    C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'pacman --noconfirm -S git && git clone -n $GNC_WINBUILDER_GIT_URI /c/gcdev64/src/gnucash-on-windows.git'; `
-    C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git checkout $GNC_WINBUILDER_GIT_CHECKOUT'; `
-    copy C:/gcdev64/src/gnucash-on-windows.git/setup-mingw64.ps1 C:/setup-mingw64.ps1; `
-    echo """"$Env:GNC_WINBUILDER_GIT_CHECKOUT"""" > C:/setup-mingw64.ps1.commitsha; `
-    $bootstrap_params = @{ `
-        target_dir = 'C:\gcdev64'; `
-        msys2_root = 'C:\gcdev64\msys2'; `
-    }; `
-    if (! [string]::IsNullOrEmpty($Env:GNC_WINBUILDER_MSYS2_MIRROR)) { `
-        $bootstrap_params.preferred_mirror = $Env:GNC_WINBUILDER_MSYS2_MIRROR.TrimEnd('/'); `
-    }; `
-    C:/setup-mingw64.ps1 @bootstrap_params; `
-    Write-Host 'There may be a long delay at the end of this Docker build stage...'
+RUN if ($Env:GNC_WINBUILDER_GIT_CHECKOUT -notlike '* *') { `
+        mkdir C:/gcdev64/src; `
+        C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'pacman --noconfirm -S git && git clone -n $GNC_WINBUILDER_GIT_URI /c/gcdev64/src/gnucash-on-windows.git'; `
+        C:/gcdev64/msys2/msys2_shell.cmd -defterm -no-start -c 'cd /c/gcdev64/src/gnucash-on-windows.git && git checkout $GNC_WINBUILDER_GIT_CHECKOUT'; `
+        copy C:/gcdev64/src/gnucash-on-windows.git/setup-mingw64.ps1 C:/setup-mingw64.ps1; `
+        echo """"$Env:GNC_WINBUILDER_GIT_CHECKOUT"""" > C:/setup-mingw64.ps1.commitsha; `
+        $bootstrap_params = @{ `
+            target_dir = 'C:\gcdev64'; `
+            msys2_root = 'C:\gcdev64\msys2'; `
+        }; `
+        if (! [string]::IsNullOrEmpty($Env:GNC_WINBUILDER_MSYS2_MIRROR)) { `
+            $bootstrap_params.preferred_mirror = $Env:GNC_WINBUILDER_MSYS2_MIRROR.TrimEnd('/'); `
+        }; `
+        C:/setup-mingw64.ps1 @bootstrap_params; `
+        Write-Host 'There may be a long delay at the end of this Docker build stage...'; `
+    }
 
-# build environment is now ready to use. Open an MSys2/mingw32 shell from the start menu, cd to /C/gcdev64, and run
-#    jhbuild -f src/gnucash-on-windows.git/jhbuildrc build
-#    Note that the build will not work with the plain MSys2 shell!
-# can use TARGET=gnucash-maint jhbuild -f jhbuildrc build to build the maint branch, substitute gnucash-master for gnucash-maint if you want to build the master branch.
-# Likely the build system will only allow a branch or tag there (rather than also commits) since the command executed for 'TARGET=gnucash-3.5' was:
-#     git clone git://github.com/Gnucash/gnucash.git gnucash-git -b 3.5
-# RUN C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'cd /C/gcdev64 && TARGET=gnucash-${GNC_GIT_CHECKOUT} jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
-# C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'cd /C/gcdev64 && TARGET=gnucash-3.5 jhbuild -f src/gnucash-on-windows.git/jhbuildrc build'
-# view all compiler defines ==> C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'gcc -dM -E - < /dev/null|grep -i ming'
-#                               C:\gcdev64\msys2\msys2_shell.cmd -mingw32 -defterm -no-start -c 'g++ -dM -E -x c++ - < /dev/null|grep -i ming'
-#
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-make}
+ENV GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT:-3.5}
 
 # install startup files
 COPY windowsbuild.ps1 /
-CMD [ "powershell", "/windowsbuild.ps1" ]
+CMD [ "powershell.exe", "-NoExit", "-File", "/windowsbuild.ps1" ]
