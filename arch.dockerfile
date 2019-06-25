@@ -30,24 +30,40 @@ HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
     CMD true
 
 # setup the OS build environment; update needs to be included in installs otherwise older apt database is cached in docker layer
-RUN pacman -Syu --quiet --noconfirm --needed gcc cmake make boost python3 python-gobject pkg-config gettext guile git ninja gtest gmock sqlite3 \
-           webkit2gtk swig gwenhywfar aqbanking intltool libxslt postgresql-libs libmariadbclient libdbi libdbi-drivers \
-           vi tzdata > /dev/null && \
+RUN PKG_BASE="git gcc cmake make ninja glib2 webkit2gtk guile libxslt icu swig" \
+    PKG_BOOST="boost" \
+    PKG_GTEST="gtest gmock" \
+    PKG_BANK="aqbanking gwenhywfar" \
+    PKG_DB="libdbi libdbi-drivers sqlite3 postgresql-libs libmariadbclient" \
+    PKG_OFX="libofx" \
+    PKG_PYTHON="python3 python-gobject" \
+    PKG_OTHER="iso-codes pkg-config dconf texinfo doxygen gettext intltool tzdata" \
+    PKG_UNDOC="libsecret" \
+    PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
+    echo $PKG_ALL | xargs pacman -Syu --quiet --noconfirm --needed > /dev/null || \
+    exit 1 ; \
     yes | pacman -Scc ; \
     rm -rf /tmp/*
 
 # timezone, generate any needed locales
+ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    echo -e "en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8\nfr_FR.UTF-8 UTF-8\nde_DE.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen
-ENV LANG=${LANG:-en_US.UTF-8} \
-    TZ=${TZ:-Etc/UTC}
+    localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
+    localedef -c -f UTF-8 -i en_GB en_GB.UTF-8 && \
+    localedef -c -f UTF-8 -i fr_FR fr_FR.UTF-8 && \
+    localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
+    localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
+    echo "LANG=${LANG}" > /etc/locale.conf
+ARG TZ=Etc/UTC
+ENV LANG=$LANG \
+    TZ=$TZ
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-ninja} \
+ARG BUILDTYPE=cmake-ninja
+ENV BUILDTYPE=$BUILDTYPE \
     BASH_ENV=~/.bashrc
 
 # install startup files
