@@ -34,14 +34,17 @@ RUN sed -i"" "s/^# deb-src/deb-src/" /etc/apt/sources.list && \
     (grep "^deb .*debian\.org" /etc/apt/sources.list|sed "s/^deb /deb-src /") >> /etc/apt/sources.list
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && \
-    apt-get build-dep -qq gnucash > /dev/null && \
-    apt-get install -qq vim tzdata git bash-completion make swig xsltproc texinfo ninja-build libboost-all-dev libgtk-3-dev \
-            aqbanking-tools libdbd-sqlite3 libdbd-pgsql libdbd-mysql locales dbus-x11 python3-dev '^python3(\.4)?-venv' python3-gi \
-            $(apt-cache policy locales-all|grep -q "Candidate: [0-9]" && echo "locales-all") \
-            cmake$(apt-cache policy cmake|grep -q "Candidate: 2" && echo 3) \
-            libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.0|grep -q "Candidate: [0-9]" && echo 4 || echo 3).0-dev > /dev/null && \
-    # why (re)install these two specific language-packs on Ubuntu? Perhaps parameterize locales with ARG
-    (apt-cache policy language-pack-en|grep -q "Candidate:" && apt-get --reinstall install -qq language-pack-en language-pack-fr language-pack-de > /dev/null || exit 0) && \
+    PKG_BASE="git g++ cmake$(apt-cache policy cmake|grep -q 'Candidate: 2' && echo 3) ninja-build libglib2.0-dev libgtk-3-dev guile-2.0-dev libxml2-dev xsltproc libxslt1-dev libicu-dev swig3.0 libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.*-dev|grep -q 'Candidate: [0-9]' && echo 4 || echo 3).*-dev" \
+    PKG_BOOST="libboost-all-dev" \
+    PKG_GTEST="" \
+    PKG_BANK="libaqbanking.*-dev libgwenhywfar.*-dev libchipcard-libgwenhywfar.*-plugins" \
+    PKG_DB="libdbi-dev libdbd-sqlite3 libdbd-mysql libdbd-pgsql" \
+    PKG_OFX="libofx-dev" \
+    PKG_PYTHON="python3-dev python3-gi ^python3(\.4)?-venv" \
+    PKG_OTHER="iso-codes dconf-gsettings-backend texinfo doxygen gettext dbus-x11 tzdata locales" \
+    PKG_UNDOC="libsecret-1-dev" \
+    PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
+    echo $PKG_ALL | xargs apt-get install -qq && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 # cmake requires gtest 1.8+
@@ -50,16 +53,27 @@ ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
 
 # timezone, generate any needed locales
+ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    update-locale LANG=${LANG:-en_US.UTF-8}
-ENV LANG=${LANG:-en_US.UTF-8} \
-    TZ=${TZ:-Etc/UTC}
+    localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
+    localedef -c -f UTF-8 -i en_GB en_GB.UTF-8 && \
+    localedef -c -f UTF-8 -i fr_FR fr_FR.UTF-8 && \
+    localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
+    localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
+    echo "LANG=${LANG}" > /etc/locale.conf
+ARG TZ=Etc/UTC
+ENV LANG=$LANG \
+    TZ=$TZ
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
+# use update-alternatives to make canonical names/locations; enables swig3 on debian 8 with old cmake3
+RUN update-alternatives --install /usr/local/bin/swig swig /usr/bin/swig3.0 20
+
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-make} \
+ARG BUILDTYPE=cmake-make
+ENV BUILDTYPE=$BUILDTYPE \
     BASH_ENV=~/.bashrc
 
 # install startup files
