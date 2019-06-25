@@ -46,11 +46,13 @@ RUN PKG_BASE="gcc-c++ cmake3 glib2-devel gtk3-devel guile-devel libxml2-devel ge
     PKG_DB="libdbi-devel libdbi-dbd-sqlite libdbi-dbd-mysql libdbi-dbd-pgsql" \
     PKG_OFX="libofx-devel" \
     PKG_PYTHON="$(yum info python3[56789]-devel &> /dev/null && echo 'python3[56789]-devel python3[56789]-gobject' || echo 'python3-devel python3-gobject')" \
-    PKG_OTHER="iso-codes-devel dconf-devel texinfo doxygen dbus-x11 $(yum info glibc-locale-source &> /dev/null && echo 'glibc-locale-source')" \
+    PKG_OTHER="iso-codes-devel dconf-devel texinfo doxygen dbus-x11 tzdata $(yum info glibc-locale-source &> /dev/null && echo 'glibc-locale-source')" \
     PKG_UNDOC="libsecret-devel" \
     PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
-    set -x; \
-    for i in $PKG_ALL; do yum --quiet --assumeyes install "$i" || exit 1; done && \
+    for i in $PKG_ALL; do \
+        echo "Installing $i"; \
+        yum --quiet --assumeyes install "$i" || exit 1; \
+    done && \
     yum --quiet clean all
 
 # cmake requires gtest 1.8+
@@ -59,14 +61,17 @@ ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
 
 # timezone, generate any needed locales
+ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
     localedef -c -f UTF-8 -i en_GB en_GB.UTF-8 && \
     localedef -c -f UTF-8 -i fr_FR fr_FR.UTF-8 && \
     localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
-    echo "LANG=\"${LANG:-en_US.UTF-8}\"" > /etc/locale.conf
-ENV LANG=${LANG:-en_US.UTF-8} \
-    TZ=${TZ:-Etc/UTC}
+    localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
+    echo "LANG=${LANG}" > /etc/locale.conf
+ARG TZ=Etc/UTC
+ENV LANG=$LANG \
+    TZ=$TZ
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
@@ -87,7 +92,8 @@ RUN alternatives --install /usr/local/bin/cmake \
     echo "export _GNC_CMAKE_COMPAT=\"-DBoost_COMPILER=$(find /usr/lib64 -name 'libboost_regex.so*' ! -type l | grep -o -E '\.so.*') -DBoost_NAMESPACE=libboost -DBoost_USE_MULTITHREADED=OFF\"" >> "$HOME/.bashrc"
 
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-make} \
+ARG BUILDTYPE=cmake-make
+ENV BUILDTYPE=$BUILDTYPE \
     BASH_ENV=~/.bashrc
 
 # install startup files

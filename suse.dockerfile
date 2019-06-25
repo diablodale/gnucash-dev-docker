@@ -40,20 +40,25 @@ RUN zypper -n refresh && \
     PKG_DB="libdbi-devel>=0.8.3 libdbi-drivers-dbd-sqlite3>=0.8.3 libdbi-drivers-dbd-mysql>=0.8.3 libdbi-drivers-dbd-pgsql>=0.8.3" \
     PKG_OFX="libofx-devel>=0.9.0" \
     PKG_PYTHON="python3-devel>=3.2 python3-gobject" \
-    PKG_OTHER="iso-codes-devel dconf-devel texinfo doxygen gettext-runtime dbus-1-x11" \
+    PKG_OTHER="iso-codes-devel gsettings-backend-dconf texinfo doxygen gettext-runtime dbus-1-x11 timezone" \
     PKG_UNDOC="libsecret-devel" \
     PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
     echo $PKG_ALL | xargs zypper -n install
 
 # timezone, generate any needed locales
-ENV LANG=${LANG:-en_US.UTF-8} \
-    TZ=${TZ:-Etc/UTC}
+ARG LANG=en_US.UTF-8
+RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    echo "LANG=${LANG}" > /etc/locale.conf
+ARG TZ=Etc/UTC
+ENV LANG=$LANG \
+    TZ=$TZ
 
 # create python3 virtual environment; set bash to always configure for Python3
 RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
 
 # environment vars
-ENV BUILDTYPE=${BUILDTYPE:-cmake-make} \
+ARG BUILDTYPE=cmake-make
+ENV BUILDTYPE=$BUILDTYPE \
     BASH_ENV=~/.bashrc
 
 # install startup files
