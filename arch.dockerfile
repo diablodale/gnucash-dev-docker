@@ -37,9 +37,6 @@ RUN PKG_BASE="git gcc cmake make ninja glib2 webkit2gtk guile libxslt icu swig" 
     yes | pacman -Scc ; \
     rm -rf /tmp/*
 
-# cmake, gtest setup
-ARG BUILDTYPE=cmake-ninja
-
 # timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
@@ -49,11 +46,10 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
     localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
-ARG TZ=Etc/UTC
 ENV BASH_ENV=~/.bashrc \
-    BUILDTYPE=$BUILDTYPE \
+    BUILDTYPE=cmake-ninja \
     LANG=$LANG \
-    TZ=$TZ
+    TZ=Etc/UTC
 
 # create python3 virtual environment
 RUN python3 -m venv --system-site-packages /python3-venv

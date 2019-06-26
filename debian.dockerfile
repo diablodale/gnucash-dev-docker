@@ -42,7 +42,6 @@ RUN apt-get update -qq && \
 # cmake, gtest setup
 # use update-alternatives to make canonical names/locations; enables swig3 on debian 8 with old cmake3
 RUN update-alternatives --install /usr/local/bin/swig swig /usr/bin/swig3.0 20
-ARG BUILDTYPE=cmake-make
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
 ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
@@ -56,11 +55,10 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
     localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
-ARG TZ=Etc/UTC
 ENV BASH_ENV=~/.bashrc \
-    BUILDTYPE=$BUILDTYPE \
+    BUILDTYPE=cmake-make \
     LANG=$LANG \
-    TZ=$TZ
+    TZ=Etc/UTC
 
 # create python3 virtual environment
 RUN python3 -m venv --system-site-packages /python3-venv

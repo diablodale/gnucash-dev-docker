@@ -37,9 +37,6 @@ RUN zypper -n refresh && \
     PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
     echo $PKG_ALL | xargs zypper -n install
 
-# cmake, gtest setup
-ARG BUILDTYPE=cmake-make
-
 # timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
@@ -49,11 +46,10 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
     localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
-ARG TZ=Etc/UTC
 ENV BASH_ENV=~/.bashrc \
-    BUILDTYPE=$BUILDTYPE \
+    BUILDTYPE=cmake-make \
     LANG=$LANG \
-    TZ=$TZ
+    TZ=Etc/UTC
 
 # create python3 virtual environment
 RUN python3 -m venv --system-site-packages /python3-venv
