@@ -1,8 +1,10 @@
 .*
 *.md
+*.log
 LICENSE
 docker-compose.yml
 Dockerfile
 *.dockerfile
 
-testdata
+gnucash/
+build/

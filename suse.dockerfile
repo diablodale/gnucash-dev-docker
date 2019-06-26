@@ -21,14 +21,6 @@ ARG OS_DIST=opensuse/leap
 ARG OS_TAG=15.0
 FROM $OS_DIST:$OS_TAG
 
-# volume map these to host volumes, else all source and build results will remain in container
-# gnucash: contains git clone of gnucash source
-# build: build destination of make
-VOLUME [ "/gnucash", "/build" ]
-
-HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
-    CMD true
-
 # setup the OS build environment; update needs to be included in installs otherwise older package database is cached in docker layer
 RUN zypper -n refresh && \
     zypper -n patch && \
@@ -40,28 +32,42 @@ RUN zypper -n refresh && \
     PKG_DB="libdbi-devel>=0.8.3 libdbi-drivers-dbd-sqlite3>=0.8.3 libdbi-drivers-dbd-mysql>=0.8.3 libdbi-drivers-dbd-pgsql>=0.8.3" \
     PKG_OFX="libofx-devel>=0.9.0" \
     PKG_PYTHON="python3-devel>=3.2 python3-gobject" \
-    PKG_OTHER="iso-codes-devel gsettings-backend-dconf texinfo doxygen gettext-runtime dbus-1-x11 timezone" \
+    PKG_OTHER="iso-codes-devel gsettings-backend-dconf texinfo doxygen gettext-runtime dbus-1-x11 timezone gzip glibc-i18ndata glibc-locale" \
     PKG_UNDOC="libsecret-devel" \
     PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
     echo $PKG_ALL | xargs zypper -n install
 
-# timezone, generate any needed locales
+# cmake, gtest setup
+ARG BUILDTYPE=cmake-make
+
+# timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
+    localedef -c -f UTF-8 -i en_GB en_GB.UTF-8 && \
+    localedef -c -f UTF-8 -i fr_FR fr_FR.UTF-8 && \
+    localedef -c -f UTF-8 -i de_DE de_DE.UTF-8 && \
+    localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
 ARG TZ=Etc/UTC
-ENV LANG=$LANG \
+ENV BASH_ENV=~/.bashrc \
+    BUILDTYPE=$BUILDTYPE \
+    LANG=$LANG \
     TZ=$TZ
 
-# create python3 virtual environment; set bash to always configure for Python3
-RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
-
-# environment vars
-ARG BUILDTYPE=cmake-make
-ENV BUILDTYPE=$BUILDTYPE \
-    BASH_ENV=~/.bashrc
+# create python3 virtual environment
+RUN python3 -m venv --system-site-packages /python3-venv
 
 # install startup files
-COPY commonbuild afterfailure susebuild /
-RUN chmod u=rx,go= /commonbuild /afterfailure /susebuild
-CMD [ "/susebuild" ]
+COPY homedir/.* /root/
+COPY commonbuild afterfailure /
+RUN chmod u=rx,go= /commonbuild /afterfailure /root/.*
+CMD [ "/commonbuild" ]
+
+# volume map these to host volumes, else all source and build results will remain in container
+# gnucash: contains git clone of gnucash source
+# build: build destination of make
+VOLUME [ "/gnucash", "/build" ]
+
+HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
+    CMD true

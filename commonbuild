@@ -23,20 +23,15 @@ fi
 
 # prepare source directory
 mkdir -p /gnucash
-if [ -z "$(ls -A /gnucash)" ] && [ -n "$GNC_GIT_CHECKOUT" ]; then
-    git clone -n https://github.com/Gnucash/gnucash.git
-    cd /gnucash && git checkout "$GNC_GIT_CHECKOUT"
-    cd /
-fi
-
-# patch CMakefile to remove forced 'mt' in Boost library pathname search; it only affects the file search, not Boost functionality
-# https://askubuntu.com/questions/486006/cannot-find-boost-thread-mt-library?answertab=votes#tab-top
-# necessary for OS (e.g. CentOS) that have non-standard Boost library pathnames
-sed -i -e '/Boost_USE_MULTITHREADED ON/c #removed problematic Boost_USE_MULTITHREADED ON' /gnucash/CMakeLists.txt
-
-# enables minimal translation support when OS has gettext < 0.19.6
-if [ $(((echo '0.19.6'; gettext --version | head -1 | grep -o -E '\b[0-9.]{3,}\b') | sort -V) | head -1) != "0.19.6" ]; then
-    export _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
+if [ -z "$(ls -A /gnucash)" ]; then
+    if [ -n "$GNC_GIT_CHECKOUT" ]; then
+        git clone -n https://github.com/Gnucash/gnucash.git
+        cd /gnucash && git checkout "$GNC_GIT_CHECKOUT"
+        cd /
+    else
+        echo 'Nothing to do because $GNC_GIT_CHECKOUT is undefined and /gnucash is empty'
+        exit 1
+    fi
 fi
 
 # prepare build directory
@@ -45,6 +40,25 @@ cd /build
 
 # prepare user settings directory
 mkdir -p "$HOME"/.local/share
+
+# patch CMakefile to remove forced 'mt' in Boost library pathname search; it only affects the file search, not Boost functionality
+# https://askubuntu.com/questions/486006/cannot-find-boost-thread-mt-library?answertab=votes#tab-top
+sed -i -e '/Boost_USE_MULTITHREADED ON/c #removed problematic Boost_USE_MULTITHREADED ON' /gnucash/CMakeLists.txt
+
+# necessary for some Linux (e.g. CentOS) that have non-standard Boost library pathnames
+# e.g. libary files named 'libboost_regex.so.1.69.0' need removal of forced multithread path search in the root CMakeLists.txt and
+#      -DBoost_COMPILER=.so.1.69.0 -DBoost_NAMESPACE=libboost -DBoost_USE_MULTITHREADED=OFF
+if [[ -n "$(compgen -G '/usr/lib64/libboost_regex.so.*')" && ! -f '/usr/lib64/libboost_regex.so' ]]; then
+    _GNC_CMAKE_COMPAT="-DBoost_COMPILER=$(find /usr/lib64 -name 'libboost_regex.so*' ! -type l | grep -o -E '\.so.*') -DBoost_NAMESPACE=libboost -DBoost_USE_MULTITHREADED=OFF"
+fi
+
+# enable minimal translation support when OS has gettext < 0.19.6
+if [ $(((echo '0.19.6'; gettext --version | head -1 | grep -o -E '\b[0-9.]{3,}\b') | sort -V) | head -1) != "0.19.6" ]; then
+    _GNC_CMAKE_COMPAT="$_GNC_CMAKE_COMPAT -DALLOW_OLD_GETTEXT=ON"
+fi
+
+# enable dbus/dconf/gsettings functionality with a machine-id
+dbus-uuidgen --ensure
 
 # build and run unit tests
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then

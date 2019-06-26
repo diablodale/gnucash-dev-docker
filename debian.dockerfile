@@ -21,14 +21,6 @@ ARG OS_DIST=debian
 ARG OS_TAG=9
 FROM $OS_DIST:$OS_TAG
 
-# volume map these to host volumes, else all source and build results will remain in container
-# gnucash: contains git clone of gnucash source
-# build: build destination of make
-VOLUME [ "/gnucash", "/build" ]
-
-HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
-    CMD true
-
 # setup the OS build environment; update needs to be included in installs otherwise older apt database is cached in docker layer
 RUN sed -i"" "s/^# deb-src/deb-src/" /etc/apt/sources.list && \
     (grep "^deb .*debian\.org" /etc/apt/sources.list|sed "s/^deb /deb-src /") >> /etc/apt/sources.list
@@ -47,12 +39,15 @@ RUN apt-get update -qq && \
     echo $PKG_ALL | xargs apt-get install -qq && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
-# cmake requires gtest 1.8+
+# cmake, gtest setup
+# use update-alternatives to make canonical names/locations; enables swig3 on debian 8 with old cmake3
+RUN update-alternatives --install /usr/local/bin/swig swig /usr/bin/swig3.0 20
+ARG BUILDTYPE=cmake-make
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
 ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
 
-# timezone, generate any needed locales
+# timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
@@ -62,21 +57,24 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
 ARG TZ=Etc/UTC
-ENV LANG=$LANG \
+ENV BASH_ENV=~/.bashrc \
+    BUILDTYPE=$BUILDTYPE \
+    LANG=$LANG \
     TZ=$TZ
 
-# create python3 virtual environment; set bash to always configure for Python3
-RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
-
-# use update-alternatives to make canonical names/locations; enables swig3 on debian 8 with old cmake3
-RUN update-alternatives --install /usr/local/bin/swig swig /usr/bin/swig3.0 20
-
-# environment vars
-ARG BUILDTYPE=cmake-make
-ENV BUILDTYPE=$BUILDTYPE \
-    BASH_ENV=~/.bashrc
+# create python3 virtual environment
+RUN python3 -m venv --system-site-packages /python3-venv
 
 # install startup files
-COPY commonbuild afterfailure debianbuild /
-RUN chmod u=rx,go= /commonbuild /afterfailure /debianbuild
-CMD [ "/debianbuild" ]
+COPY homedir/.* /root/
+COPY commonbuild afterfailure /
+RUN chmod u=rx,go= /commonbuild /afterfailure /root/.*
+CMD [ "/commonbuild" ]
+
+# volume map these to host volumes, else all source and build results will remain in container
+# gnucash: contains git clone of gnucash source
+# build: build destination of make
+VOLUME [ "/gnucash", "/build" ]
+
+HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
+    CMD true

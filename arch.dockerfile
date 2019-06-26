@@ -21,14 +21,6 @@ ARG OS_DIST=archlinux/base
 ARG OS_TAG=latest
 FROM $OS_DIST:$OS_TAG
 
-# volume map these to host volumes, else all source and build results will remain in container
-# gnucash: contains git clone of gnucash source
-# build: build destination of make
-VOLUME [ "/gnucash", "/build" ]
-
-HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
-    CMD true
-
 # setup the OS build environment; update needs to be included in installs otherwise older apt database is cached in docker layer
 RUN PKG_BASE="git gcc cmake make ninja glib2 webkit2gtk guile libxslt icu swig" \
     PKG_BOOST="boost" \
@@ -45,7 +37,10 @@ RUN PKG_BASE="git gcc cmake make ninja glib2 webkit2gtk guile libxslt icu swig" 
     yes | pacman -Scc ; \
     rm -rf /tmp/*
 
-# timezone, generate any needed locales
+# cmake, gtest setup
+ARG BUILDTYPE=cmake-ninja
+
+# timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
@@ -55,18 +50,24 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
 ARG TZ=Etc/UTC
-ENV LANG=$LANG \
+ENV BASH_ENV=~/.bashrc \
+    BUILDTYPE=$BUILDTYPE \
+    LANG=$LANG \
     TZ=$TZ
 
-# create python3 virtual environment; set bash to always configure for Python3
-RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
-
-# environment vars
-ARG BUILDTYPE=cmake-ninja
-ENV BUILDTYPE=$BUILDTYPE \
-    BASH_ENV=~/.bashrc
+# create python3 virtual environment
+RUN python3 -m venv --system-site-packages /python3-venv
 
 # install startup files
-COPY commonbuild afterfailure archbuild /
-RUN chmod u=rx,go= /commonbuild /afterfailure /archbuild
-CMD [ "/archbuild" ]
+COPY homedir/.* /root/
+COPY commonbuild afterfailure /
+RUN chmod u=rx,go= /commonbuild /afterfailure /root/.*
+CMD [ "/commonbuild" ]
+
+# volume map these to host volumes, else all source and build results will remain in container
+# gnucash: contains git clone of gnucash source
+# build: build destination of make
+VOLUME [ "/gnucash", "/build" ]
+
+HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
+    CMD true

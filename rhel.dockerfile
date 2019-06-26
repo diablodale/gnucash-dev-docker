@@ -21,14 +21,6 @@ ARG OS_DIST=centos
 ARG OS_TAG=7
 FROM $OS_DIST:$OS_TAG
 
-# volume map these to host volumes, else all source and build results will remain in container
-# gnucash: contains git clone of gnucash source
-# build: build destination of make
-VOLUME [ "/gnucash", "/build" ]
-
-HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
-    CMD true
-
 # setup the OS build environment; update needs to be included in installs otherwise older package database is cached in docker layer
 RUN yum --quiet --assumeyes --skip-broken install epel-release && \
     yum --quiet clean all && \
@@ -55,12 +47,24 @@ RUN PKG_BASE="gcc-c++ cmake3 glib2-devel gtk3-devel guile-devel libxml2-devel ge
     done && \
     yum --quiet clean all
 
-# cmake requires gtest 1.8+
+# cmake, gtest setup
+# enable Boost and Cmake from base and EPEL repos rather than hacking the source, e.g. http://gnucash.1415818.n4.nabble.com/GNC-GnuCash-3-3-builds-on-CentOS-7-td4704432.html
+# use update-alternatives to make canonical names/locations; set build options to point to EPEL-specific boost library naming
+RUN update-alternatives --install /usr/local/bin/cmake \
+        cmake /usr/bin/cmake3 20 \
+        --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+        --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+        --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+        --family cmake && \
+    set -o pipefail && \
+    update-alternatives --install /usr/local/include/boost \
+        boost "$(ls -d -1 -v -r /usr/include/boost1* 2> /dev/null | head -1 || echo '/usr/include')/boost" 20
+ARG BUILDTYPE=cmake-make
 RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
 ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
 
-# timezone, generate any needed locales
+# timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i en_US en_US.UTF-8 && \
@@ -70,33 +74,24 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     localedef -c -f UTF-8 -i $(echo "$LANG" | cut -d . -f 1) $LANG && \
     echo "LANG=${LANG}" > /etc/locale.conf
 ARG TZ=Etc/UTC
-ENV LANG=$LANG \
+ENV BASH_ENV=~/.bashrc \
+    BUILDTYPE=$BUILDTYPE \
+    LANG=$LANG \
     TZ=$TZ
 
-# create python3 virtual environment; set bash to always configure for Python3
-RUN python3 -m venv --system-site-packages /python3-venv && (echo "# activate python3 with standard venv"; echo ". /python3-venv/bin/activate") > "$HOME/.bashrc"
-
-# enable Boost and Cmake from base and EPEL repos rather than hacking the source, e.g. http://gnucash.1415818.n4.nabble.com/GNC-GnuCash-3-3-builds-on-CentOS-7-td4704432.html
-# use update-alternatives to make canonical names/locations; set build options to point to EPEL-specific boost library naming
-# e.g. libary files named 'libboost_regex.so.1.69.0' need -DBoost_NAMESPACE=libboost -DBoost_COMPILER=.so.1.69.0 -DBoost_USE_MULTITHREADED=OFF
-#      and to remove the forced multithread path search in the root CMakeLists.txt
-RUN alternatives --install /usr/local/bin/cmake \
-        cmake /usr/bin/cmake3 20 \
-        --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-        --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-        --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-        --family cmake && \
-    set -o pipefail && \
-    alternatives --install /usr/local/include/boost \
-        boost "$(ls -d -1 -v -r /usr/include/boost1* 2> /dev/null | head -1 || echo '/usr/include')/boost" 20 && \
-    echo "export _GNC_CMAKE_COMPAT=\"-DBoost_COMPILER=$(find /usr/lib64 -name 'libboost_regex.so*' ! -type l | grep -o -E '\.so.*') -DBoost_NAMESPACE=libboost -DBoost_USE_MULTITHREADED=OFF\"" >> "$HOME/.bashrc"
-
-# environment vars
-ARG BUILDTYPE=cmake-make
-ENV BUILDTYPE=$BUILDTYPE \
-    BASH_ENV=~/.bashrc
+# create python3 virtual environment
+RUN python3 -m venv --system-site-packages /python3-venv
 
 # install startup files
-COPY commonbuild afterfailure rhelbuild /
-RUN chmod u=rx,go= /commonbuild /afterfailure /rhelbuild
-CMD [ "/rhelbuild" ]
+COPY homedir/.* /root/
+COPY commonbuild afterfailure /
+RUN chmod u=rx,go= /commonbuild /afterfailure /root/.*
+CMD [ "/commonbuild" ]
+
+# volume map these to host volumes, else all source and build results will remain in container
+# gnucash: contains git clone of gnucash source
+# build: build destination of make
+VOLUME [ "/gnucash", "/build" ]
+
+HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
+    CMD true
