@@ -35,7 +35,9 @@ RUN zypper -n refresh && \
     PKG_OTHER="iso-codes-devel gsettings-backend-dconf texinfo doxygen gettext-runtime dbus-1-x11 timezone gzip glibc-i18ndata glibc-locale" \
     PKG_UNDOC="libsecret-devel" \
     PKG_ALL="${PKG_BASE} ${PKG_BOOST} ${PKG_GTEST} ${PKG_BANK} ${PKG_DB} ${PKG_OFX} ${PKG_PYTHON} ${PKG_OTHER} ${PKG_UNDOC}"; \
-    echo $PKG_ALL | xargs zypper -n install
+    echo $PKG_ALL | xargs zypper -n install && \
+    zypper -n clean -a && \
+    rm -rf /var/log/zypp /var/log/zypper.log
 
 # timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
