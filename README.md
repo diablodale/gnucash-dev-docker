@@ -44,7 +44,7 @@ of **Ubuntu, Debian, Arch, CentOS, Fedora, and openSUSE Linux**. Use the same *Q
 command above with any of the OS in the file.
 
 You can automate the install and have it appear on any desktop running X11
-by setting `GNC_INSTALL` and `DISPLAY`. Inspect this file to see how new
+by setting `GNC_PHASES` and `DISPLAY`. Inspect this file to see how new
 operating systems can be added or options changed to meet your needs.
 
 `docker-compose` documentation at <https://docs.docker.com/compose/> can help you
@@ -61,10 +61,10 @@ are the build arguments and environment variables specific to this solution.
 | :---   | :---        | :---    |
 | BUILDTYPE | Override the default make build tool for the OS. Only `cmake-make` and `cmake-ninja` are supported. To prevent building, set to any other value, e.g. `stop`. | `BUILDTYPE=stop` |
 | DISPLAY | Set `DISPLAY` environment variable for X11; enables GnuCash inside container to display on host/remote X11. | `DISPLAY=192.168.1.5:0.0` |
-| GNC_EXIT_AFTER_TEST | Set to `1` to immediately stop/exit container with test results. Container's log retains details. Good for DevOps and CI like [Travis](https://travis-ci.org/). | `GNC_EXIT_AFTER_TEST=1` |
+| GNC_EXIT_WITH_RESULT | Set to `1` to immediately stop/exit container with results. Container's log retains details. Good for DevOps and CI like [Travis](https://travis-ci.org/). | `GNC_EXIT_WITH_RESULT=1` |
 | GNC_GIT_CHECKOUT | GnuCash git branch, commit, tag to clone and checkout into the container's /build directory. It will abort if /build already contains files. | `GNC_GIT_CHECKOUT=3.5` |
 | GNC_IGNORE_BUILD_FAIL | Set to `1` to ignores build errors/failures. Container's log retains details. | `GNC_IGNORE_BUILD_FAIL=1` |
-| GNC_INSTALL | Set to `1` to automatically install GnuCash in the container after build is successful. Ignores result of unit tests. | `GNC_INSTALL=1` |
+| GNC_PHASES | Comma-separated phases to execute. Default is `build,test`.<br/>`build`: compile GnuCash executable<br/>`install`: install GnuCash in the container<br/>`test`: compile and run unit tests | `GNC_PHASES=build,install` |
 | PLATFORM_CMAKE_OPTS | [Gnucash Build Options](https://code.gnucash.org/wiki/Gnucash_Build_Options) separated by spaces| `-DWITH_PYTHON=ON` |
 | TZ | Override the default timezone `Etc/UTC`. Can be any timezone identifier from tzdata in /usr/share/zoneinfo, e.g. `Japan`, `Europe/Berlin`, `Australia/Sydney`, etc. | `TZ=Australia/Sydney` |
 

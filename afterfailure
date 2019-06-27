@@ -26,7 +26,7 @@ else
     echo "Unknown BUILDTYPE: \"$BUILDTYPE\", cannot provide failure information"
 fi
 
-if [ "$GNC_EXIT_AFTER_TEST" = "1" ]; then
+if [ "$GNC_EXIT_WITH_RESULT" = "1" ]; then
     exit 1
 fi
 

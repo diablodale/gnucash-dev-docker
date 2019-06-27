@@ -62,8 +62,9 @@ services:
       context: .
       dockerfile: debian.dockerfile
       args:
-        - OS_DIST=ubuntu # dockerhub distribution from which the container is based
-        - OS_TAG=18.04   # dockerhub tag from which the container is based
+        - OS_DIST=ubuntu    # dockerhub distribution from which the container is based
+        - OS_TAG=18.04      # dockerhub tag from which the container is based
+        #- LANG=de_DE.UTF-8 # override the default locale en_US.UTF-8
     image: gnucashbuild:ubuntu-18.04
     container_name: gnucashbuild-ubuntu-18.04
     init: true
@@ -74,8 +75,8 @@ services:
       - GNC_GIT_CHECKOUT=3.5                            # GnuCash git branch|commit|tag to clone and checkout; will not change already existing /build directory content
       #- BUILDTYPE=stop                                 # make build tool: 'cmake-make' or 'cmake-ninja'; or 'stop' to prevent building. Default value is specific to each OS
       #- GNC_IGNORE_BUILD_FAIL=1                        # ignores build errors/failures when set to 1; container's log has details
-      - GNC_INSTALL=1                                   # install GnuCash using 'make install' when set to 1 and build was successful; ignores result of unit tests
-      #- GNC_EXIT_AFTER_TEST=1                          # immediately stop/exit the container with test results when set to 1; container's log has details; good for CI
+      - GNC_PHASES=build,install,test                   # compile GnuCash, install it in the container, and run unit tests
+      #- GNC_EXIT_WITH_RESULT=1                         # immediately stop/exit the container with results when set to 1; container's log has details; good for CI
       #- DISPLAY=192.168.2.23:0.0                       # X11 setting to run GnuCash inside container and display remotely to X11 on host or another computer
     #volumes:
     #  - ./hostbuilddir:/build                          # maps host build result directory for GnuCash into container for build result

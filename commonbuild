@@ -60,15 +60,16 @@ fi
 # enable dbus/dconf/gsettings functionality with a machine-id
 dbus-uuidgen --ensure
 
-# build and run unit tests
+# execute build and/or test phases
+GNC_PHASES="${GNC_PHASES:-build,test}"
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then
-    cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/
-    { make -j $(nproc) && [ "$GNC_INSTALL" = "1" ]; } && make install
-    make check || . /afterfailure
+    [[ "$GNC_PHASES" =~ "build" ]] && cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/ && make -j $(nproc)
+    [[ "$GNC_PHASES" =~ "install" ]] && make install
+    [[ "$GNC_PHASES" =~ "test" ]] && (make check || . /afterfailure)
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
-    cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash
-    { ninja && [ "$GNC_INSTALL" = "1" ]; } && ninja install
-    ninja check || . /afterfailure
+    [[ "$GNC_PHASES" =~ "build" ]] && cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash && ninja
+    [[ "$GNC_PHASES" =~ "install" ]] && ninja install
+    [[ "$GNC_PHASES" =~ "test" ]] && (ninja check || . /afterfailure)
 else
     echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
 fi
@@ -77,7 +78,7 @@ echo "*******************"
 echo "* Build concluded *"
 echo "*******************"
 
-if [ "$GNC_EXIT_AFTER_TEST" = "1" ]; then
+if [ "$GNC_EXIT_WITH_RESULT" = "1" ]; then
     exit 0
 fi
 
