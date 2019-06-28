@@ -26,7 +26,7 @@ RUN sed -i"" "s/^# deb-src/deb-src/" /etc/apt/sources.list && \
     (grep "^deb .*debian\.org" /etc/apt/sources.list|sed "s/^deb /deb-src /") >> /etc/apt/sources.list
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && \
-    PKG_BASE="git g++ cmake$(apt-cache policy cmake|grep -q 'Candidate: 2' && echo 3) ninja-build libglib2.0-dev libgtk-3-dev guile-2.0-dev libxml2-dev xsltproc libxslt1-dev libicu-dev swig3.0 libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.*-dev|grep -q 'Candidate: [0-9]' && echo 4 || echo 3).*-dev" \
+    PKG_BASE="git g++ cmake$(apt-cache policy cmake|grep -q 'Candidate: 2' && echo 3) ninja-build libglib2.0-dev libgtk-3-dev guile-2.0-dev libxml2-dev libxml2-utils xsltproc libxslt1-dev libicu-dev swig3.0 libwebkit2gtk-$(apt-cache policy libwebkit2gtk-4.*-dev|grep -q 'Candidate: [0-9]' && echo 4 || echo 3).*-dev" \
     PKG_BOOST="libboost-all-dev" \
     PKG_GTEST="" \
     PKG_BANK="libaqbanking.*-dev libgwenhywfar.*-dev libchipcard-libgwenhywfar.*-plugins" \

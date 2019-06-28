@@ -32,8 +32,8 @@ services:
       args:
         - OS_DIST=ubuntu
         - OS_TAG=14.04
-    image: gnucashbuild:ubuntu-14.04
-    container_name: gnucashbuild-ubuntu-14.04
+    image: gnucashbuilder:ubuntu-14.04
+    container_name: gnucashbuilder-ubuntu-14.04
     init: true
     tty: true
     stdin_open: true
@@ -48,8 +48,8 @@ services:
       args:
         - OS_DIST=ubuntu
         - OS_TAG=16.04
-    image: gnucashbuild:ubuntu-16.04
-    container_name: gnucashbuild-ubuntu-16.04
+    image: gnucashbuilder:ubuntu-16.04
+    container_name: gnucashbuilder-ubuntu-16.04
     init: true
     tty: true
     stdin_open: true
@@ -65,8 +65,8 @@ services:
         - OS_DIST=ubuntu    # dockerhub distribution from which the container is based
         - OS_TAG=18.04      # dockerhub tag from which the container is based
         #- LANG=de_DE.UTF-8 # override the default locale en_US.UTF-8
-    image: gnucashbuild:ubuntu-18.04
-    container_name: gnucashbuild-ubuntu-18.04
+    image: gnucashbuilder:ubuntu-18.04
+    container_name: gnucashbuilder-ubuntu-18.04
     init: true
     tty: true
     stdin_open: true
@@ -92,8 +92,8 @@ services:
       args:
         - OS_DIST=ubuntu
         - OS_TAG=19.04
-    image: gnucashbuild:ubuntu-19.04
-    container_name: gnucashbuild-ubuntu-19.04
+    image: gnucashbuilder:ubuntu-19.04
+    container_name: gnucashbuilder-ubuntu-19.04
     init: true
     tty: true
     stdin_open: true
@@ -108,8 +108,8 @@ services:
       args:
         - OS_DIST=debian
         - OS_TAG=8
-    image: gnucashbuild:debian-8
-    container_name: gnucashbuild-debian-8
+    image: gnucashbuilder:debian-8
+    container_name: gnucashbuilder-debian-8
     init: true
     tty: true
     stdin_open: true
@@ -124,8 +124,8 @@ services:
       args:
         - OS_DIST=debian
         - OS_TAG=9
-    image: gnucashbuild:debian-9
-    container_name: gnucashbuild-debian-9
+    image: gnucashbuilder:debian-9
+    container_name: gnucashbuilder-debian-9
     init: true
     tty: true
     stdin_open: true
@@ -140,8 +140,8 @@ services:
       args:
         - OS_DIST=archlinux/base
         - OS_TAG=latest
-    image: gnucashbuild:archlinux
-    container_name: gnucashbuild-archlinux
+    image: gnucashbuilder:archlinux
+    container_name: gnucashbuilder-archlinux
     init: true
     tty: true
     stdin_open: true
@@ -156,8 +156,8 @@ services:
       args:
         - OS_DIST=centos
         - OS_TAG=7
-    image: gnucashbuild:centos-7
-    container_name: gnucashbuild-centos-7
+    image: gnucashbuilder:centos-7
+    container_name: gnucashbuilder-centos-7
     init: true
     tty: true
     stdin_open: true
@@ -172,8 +172,8 @@ services:
       args:
         - OS_DIST=opensuse/leap
         - OS_TAG=15.0
-    image: gnucashbuild:opensuse-15.0
-    container_name: gnucashbuild-opensuse-15.0
+    image: gnucashbuilder:opensuse-15.0
+    container_name: gnucashbuilder-opensuse-15.0
     init: true
     tty: true
     stdin_open: true
@@ -188,8 +188,8 @@ services:
       args:
         - OS_DIST=opensuse/leap
         - OS_TAG=15.1
-    image: gnucashbuild:opensuse-15.1
-    container_name: gnucashbuild-opensuse-15.1
+    image: gnucashbuilder:opensuse-15.1
+    container_name: gnucashbuilder-opensuse-15.1
     init: true
     tty: true
     stdin_open: true
@@ -204,8 +204,8 @@ services:
       args:
         - OS_DIST=fedora
         - OS_TAG=28
-    image: gnucashbuild:fedora-28
-    container_name: gnucashbuild-fedora-28
+    image: gnucashbuilder:fedora-28
+    container_name: gnucashbuilder-fedora-28
     init: true
     tty: true
     stdin_open: true
@@ -220,8 +220,8 @@ services:
       args:
         - OS_DIST=fedora
         - OS_TAG=29
-    image: gnucashbuild:fedora-29
-    container_name: gnucashbuild-fedora-29
+    image: gnucashbuilder:fedora-29
+    container_name: gnucashbuilder-fedora-29
     init: true
     tty: true
     stdin_open: true
@@ -236,8 +236,8 @@ services:
       args:
         - OS_DIST=fedora
         - OS_TAG=30
-    image: gnucashbuild:fedora-30
-    container_name: gnucashbuild-fedora-30
+    image: gnucashbuilder:fedora-30
+    container_name: gnucashbuilder-fedora-30
     init: true
     tty: true
     stdin_open: true
