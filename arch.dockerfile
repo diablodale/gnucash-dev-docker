@@ -37,6 +37,8 @@ RUN PKG_BASE="git gcc cmake make ninja glib2 webkit2gtk guile libxslt icu swig" 
     yes | pacman -Scc ; \
     rm -rf /tmp/*
 
+# ==== below this line, all steps are common across Linux Dockerfiles ====
+
 # timezone, generate any needed locales, environment variables
 ARG LANG=en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
@@ -59,11 +61,6 @@ COPY homedir/.* /root/
 COPY commonbuild afterfailure /
 RUN chmod u=rx,go= /commonbuild /afterfailure /root/.*
 CMD [ "/commonbuild" ]
-
-# volume map these to host volumes, else all source and build results will remain in container
-# gnucash: contains git clone of gnucash source
-# build: build destination of make
-VOLUME [ "/gnucash", "/build" ]
 
 HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \
     CMD true

@@ -74,9 +74,9 @@ else
     echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
 fi
 
-echo "*******************"
-echo "* Build concluded *"
-echo "*******************"
+echo "**********************"
+echo "* Phase(s) concluded *"
+echo "**********************"
 
 if [ "$GNC_EXIT_WITH_RESULT" = "1" ]; then
     exit 0

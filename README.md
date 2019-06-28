@@ -88,8 +88,14 @@ the container so that container can compile them.
   code folder into multiple containers *and* simultaneously compile.
 
 ```yaml
+# docker-compose.yml
 volumes:
     - /home/user1/source/gnucash:/gnucash
+```
+
+```bash
+# bash
+docker run -v /home/user1/source/gnucash:/gnucash gnucashbuild:ubuntu-16.04
 ```
 
 ### Build result folder `/build`
@@ -104,9 +110,16 @@ mounting a folder on your host into the container at `/build`.
   build folder into multiple containers *and* simultaneously compile.
 
 ```yaml
+# docker-compose.yml
 volumes:
     - /home/user1/build/gnucash:/build
 ```
+
+```bash
+# bash
+docker run -v /home/user1/build/gnucash:/build gnucashbuild:ubuntu-16.04
+```
+
 
 ## Technical Notes
 
