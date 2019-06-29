@@ -78,7 +78,8 @@
         <xsl:variable name="TestCaseClassName" select="translate(Path, '/.', '.')"/>
         <xsl:variable name="TestCaseDuration" select="Results/NamedMeasurement[@name='Execution Time']/Value"/>
         <xsl:variable name="TestCaseOutput" select="normalize-space(Results/Measurement/Value)"/>
-        <testcase name="{$TestCaseName}" classname="projectroot{$TestCaseClassName}" time="{$TestCaseDuration}">
+        <xsl:variable name="TestFile" select="normalize-space(FullCommandLine)"/>
+        <testcase name="{$TestCaseName}" classname="{$TestCaseClassName}" time="{$TestCaseDuration}" file="{$TestFile}">
             <xsl:choose>
                 <xsl:when test="@Status = 'passed'"/>
                 <xsl:when test="@Status = 'notrun'">
