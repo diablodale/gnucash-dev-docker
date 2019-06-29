@@ -1,6 +1,7 @@
 .*
 *.md
 *.log
+*.xml
 LICENSE
 docker-compose.yml
 Dockerfile
@@ -8,3 +9,4 @@ Dockerfile
 
 gnucash/
 build/
+Testing/

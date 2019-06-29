@@ -60,8 +60,9 @@ RUN python3 -m venv --system-site-packages /python3-venv
 
 # install startup files
 COPY homedir/.* /root/
-COPY commonbuild afterfailure /
-RUN chmod u=rx,go= /commonbuild /afterfailure /root/.*
+COPY commonbuild ci/ctest2junit.xslt afterfailure /
+RUN chmod u=rx,go= /commonbuild /afterfailure /root/.* && \
+    chmod u=r,go= /ctest2junit.xslt
 CMD [ "/commonbuild" ]
 
 HEALTHCHECK --start-period=30s --interval=60s --timeout=10s \

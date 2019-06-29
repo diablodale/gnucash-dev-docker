@@ -45,6 +45,9 @@ mkdir -p "$HOME"/.local/share
 # https://askubuntu.com/questions/486006/cannot-find-boost-thread-mt-library?answertab=votes#tab-top
 sed -i -e '/Boost_USE_MULTITHREADED ON/c #removed problematic Boost_USE_MULTITHREADED ON' /gnucash/CMakeLists.txt
 
+# patch CMakefile to pass ARGS on the custom target 'check'
+sed -i -e '/COMMAND \${CMAKE_CTEST_COMMAND}/c \ \ COMMAND \${CMAKE_CTEST_COMMAND} \$(ARGS)' /gnucash/CMakeLists.txt
+
 # necessary for some Linux (e.g. CentOS) that have non-standard Boost library pathnames
 # e.g. libary files named 'libboost_regex.so.1.69.0' need removal of forced multithread path search in the root CMakeLists.txt and
 #      -DBoost_COMPILER=.so.1.69.0 -DBoost_NAMESPACE=libboost -DBoost_USE_MULTITHREADED=OFF
@@ -65,13 +68,18 @@ GNC_PHASES="${GNC_PHASES:-build,test}"
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then
     [[ "$GNC_PHASES" =~ "build" ]] && cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/ && make -j $(nproc)
     [[ "$GNC_PHASES" =~ "install" ]] && make install
-    [[ "$GNC_PHASES" =~ "test" ]] && (make check || . /afterfailure)
+    [[ "$GNC_PHASES" =~ "test" ]] && (make check ARGS="--no-compress-output -T test" || . /afterfailure)
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
     [[ "$GNC_PHASES" =~ "build" ]] && cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash && ninja
     [[ "$GNC_PHASES" =~ "install" ]] && ninja install
-    [[ "$GNC_PHASES" =~ "test" ]] && (ninja check || . /afterfailure)
+    [[ "$GNC_PHASES" =~ "test" ]] && (ninja check ARGS="--no-compress-output -T test" || . /afterfailure)
 else
     echo "Unknown buildtype: \"$BUILDTYPE\". Not building."
+fi
+
+# convert ctest result xml into junit result xml
+if [ -f /build/Testing/TAG ]; then
+    xsltproc /ctest2junit.xslt "/build/Testing/$(head -n 1 /build/Testing/TAG)/Test.xml" > /build/Testing/Temporary/jUnitResults.xml
 fi
 
 echo "**********************"

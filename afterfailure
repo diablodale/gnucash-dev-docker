@@ -17,11 +17,17 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# convert ctest result xml into junit result xml
+if [ -f /build/Testing/TAG ]; then
+    xsltproc /ctest2junit.xslt "/build/Testing/$(head -n 1 /build/Testing/TAG)/Test.xml" > /build/Testing/Temporary/jUnitResults.xml
+fi
+
+# output detailed ctest log
 if [ "$BUILDTYPE" = "cmake-make" ] || [ "$BUILDTYPE" = "cmake-ninja" ]; then
     echo "########################"
     echo "##### LastTest.log #####"
     echo "########################"
-    cat /build/Testing/Temporary/LastTest.log
+    cat /build/Testing/Temporary/LastTest*.log
 else
     echo "Unknown BUILDTYPE: \"$BUILDTYPE\", cannot provide failure information"
 fi

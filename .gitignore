@@ -1,2 +1,6 @@
+*.log
+*.xml
+
 gnucash/
 build/
+Testing/
