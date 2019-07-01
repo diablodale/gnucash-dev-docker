@@ -27,6 +27,7 @@ if [ -z "$(ls -A /gnucash)" ]; then
     if [ -n "$GNC_GIT_CHECKOUT" ]; then
         git clone -n https://github.com/Gnucash/gnucash.git
         cd /gnucash && git checkout "$GNC_GIT_CHECKOUT"
+        echo -n 'commit: ' && git rev-parse HEAD
         cd /
     else
         echo 'Nothing to do because $GNC_GIT_CHECKOUT is undefined and /gnucash is empty'
