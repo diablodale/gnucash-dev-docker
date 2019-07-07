@@ -19,51 +19,39 @@ install:
 - sh: |
     #!/bin/bash
     # This script is only needed for when these CI files are in a separate repo than the core GnuCash repo
-    set -x
     set -e
     if [[ (-z "$GNC_GIT_CHECKOUT") || (-z "$APPVEYOR_BUILD_ID") ]]; then
-      echo 'Error. GNC_GIT_CHECKOUT and APPVEYOR_BUILD_ID env variables are not defined' >&2
+      echo 'Error. GNC_GIT_CHECKOUT and APPVEYOR_BUILD_ID env variables are not all defined' >&2
+      echo "       GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}" >&2
+      echo "       APPVEYOR_BUILD_ID=${APPVEYOR_BUILD_ID}" >&2
       exit 1
     fi
     if [[ ! -e gnucash.commithash.cached || -z "$(egrep "${APPVEYOR_BUILD_ID}$" gnucash.commithash.cached)" ]]; then
-      OBJECTHASH="$(git ls-remote -h -t https://github.com/Gnucash/gnucash.git ${GNC_GIT_CHECKOUT})"
-      if [ -n "$OBJECTHASH" ]; then
-        PATTERN='^([[:graph:]]+)[[:space:]]+refs/(heads|tags)'
-        if [[ "$OBJECTHASH" =~ $PATTERN ]]; then
-          if [[ "${BASH_REMATCH[2]}" == "heads" ]]; then
-            COMMITHASH="${BASH_REMATCH[1]}"
-          else
-            if curl --silent --fail --location --retry 3 --connect-timeout 5 --output tag.commithash.json https://api.github.com/repos/gnucash/gnucash/git/tags/${BASH_REMATCH[1]}; then
-              sudo apt-get --yes install jq
-              TMPHASH="$(< tag.commithash.json jq --raw-output --exit-status '.object.sha')"
-              if [ "$?" == "0" ]; then
-                COMMITHASH="$TMPHASH"
-              fi
-            fi
-          fi
-        fi
-        if [ -z "$COMMITHASH" ]; then
-          echo 'Error. GNC_GIT_CHECKOUT env variable returned unexpected ref from git repository' >&2
-          exit 1
-        fi
+      OBJECTHASH="$(curl --silent --fail --location --retry 3 --connect-timeout 5 -H 'Accept: application/vnd.github.VERSION.sha' "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}")"
+      if [[ ("$?" == "0") && -n "$OBJECTHASH" ]]; then
+        COMMITHASH="$OBJECTHASH"
       else
-        if curl --silent --fail --head --location --retry 3 --connect-timeout 5 --output /dev/null https://github.com/Gnucash/gnucash/commit/${GNC_GIT_CHECKOUT}; then
-          COMMITHASH="${GNC_GIT_CHECKOUT}"
-        else
-          echo 'Error. GNC_GIT_CHECKOUT env variable is not a valid GnuCash git repo ref or commit hash' >&2
-          exit 1
-        fi
+        echo 'Error. GNC_GIT_CHECKOUT env variable is not a valid GnuCash git repo ref or commit hash' >&2
+        exit 1
       fi
-      echo -e "${COMMITHASH}\t${APPVEYOR_BUILD_ID}" > gnucash.commithash.cached
-      curl --retry 3 --silent --show-error --fail --output /dev/null -X POST -H 'Content-Type: application/json' -d "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
+    else
+      COMMITHASH="$(cut -f 1 gnucash.commithash.cached)"
     fi
-    echo "GnuCash commit $COMMITHASH locked for all jobs across this build"
-    exit 1
+    echo -e "${COMMITHASH}\t${APPVEYOR_BUILD_ID}" > gnucash.commithash.cached
+    curl --retry 3 --silent --show-error --fail --output /dev/null -X POST -H 'Content-Type: application/json' -d "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
+    echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
 
 build_script:
 - sh: |
     #!/bin/bash
     set -e
+    if [[ (-z "$DOCKERHUBUSER") || (-z "$DOCKERHUBREPO") || (-z "$OS_DISTTAG") ]]; then
+      echo 'Error. DOCKERHUBUSER, DOCKERHUBREPO, and OS_DISTTAG env variables are not all defined' >&2
+      echo "       DOCKERHUBUSER=${DOCKERHUBUSER}" >&2
+      echo "       DOCKERHUBREPO=${DOCKERHUBREPO}" >&2
+      echo "       OS_DISTTAG=${OS_DISTTAG}" >&2
+      exit 1
+    fi
     if [[ -n "$DOCKERHUBUSER" && -n "$DOCKERHUBPW" ]]; then
       docker login --username "$DOCKERHUBUSER" \
                    --password-stdin <<< "$DOCKERHUBPW"

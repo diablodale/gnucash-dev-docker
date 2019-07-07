@@ -8,7 +8,7 @@
 1. Follow the [AppVeyor](https://www.appveyor.com/) new user setup.
 2. Visit the user profile area on the AppVeyor website
 3. Click `Security` settings and enable Two-Factor authentication (2FA)
-4. Click `API keys`. Here is where you generate API keys/tokens. You will need a key later in this setup.
+4. Click `API keys`. Here is where you generate API keys. You will need a key later in this setup.
 5. If you are the first GnuCash user on AppVeyor, then create a new `Account`
    * Name `gnucashbuilder`
    * Timezone `UTC`
