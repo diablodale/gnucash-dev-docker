@@ -1,0 +1,80 @@
+version: 1.0.{build}
+branches:
+  only:
+  - /^master/
+skip_tags: true
+max_jobs: 1 # build cache usage depends on sequential non-parallel jobs
+image: Ubuntu1804
+clone_depth: 1
+environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  DOCKERHUBUSER: diablodale
+  DOCKERHUBREPO: gnucashbuilder
+
+# cache is restored after init script, after project repo clone, before install script
+cache:
+  - gnucash.commithash.cached
+
+install:
+- sh: |
+    #!/bin/bash
+    set -e
+    if [[ (-z "$GNC_GIT_CHECKOUT") || (-z "$APPVEYOR_BUILD_ID") ]]; then
+      echo 'Error. GNC_GIT_CHECKOUT and APPVEYOR_BUILD_ID env variables are not defined' >&2
+      exit 1
+    fi
+    if [[ ! -e gnucash.commithash.cached || -z "$(egrep "${APPVEYOR_BUILD_ID}$" gnucash.commithash.cached)" ]]; then
+      COMMITHASH="$(git ls-remote -h -t https://github.com/Gnucash/gnucash.git ${GNC_GIT_CHECKOUT} | cut -f 1)"
+      if [ -z "$COMMITHASH" ]; then
+        if curl --silent --fail --head --location --retry 2 --connect-timeout 5 --output /dev/null https://github.com/Gnucash/gnucash/commit/${GNC_GIT_CHECKOUT}; then
+          COMMITHASH="${GNC_GIT_CHECKOUT}"
+        else
+          echo 'Error. GNC_GIT_CHECKOUT env variable is not a valid GnuCash git repo ref or commit hash' >&2
+          exit 1
+        fi
+      fi
+      echo -e "${COMMITHASH}\t${APPVEYOR_BUILD_ID}" > gnucash.commithash.cached
+      curl --retry 3 --silent --show-error --fail --output /dev/null -X POST -H 'Content-Type: application/json' -d "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
+    fi
+    echo "GnuCash commit $COMMITHASH locked for all jobs across this build"
+    exit 1
+
+build_script:
+- sh: |
+    #!/bin/bash
+    set -e
+    if [[ -n "$DOCKERHUBUSER" && -n "$DOCKERHUBPW" ]]; then
+      docker login --username "$DOCKERHUBUSER" \
+                   --password-stdin <<< "$DOCKERHUBPW"
+    fi
+    docker pull "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
+    docker tag "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}" "gnucashbuilder:${OS_DISTTAG}"
+    docker build --file commontester.dockerfile \
+                 --force-rm \
+                 --tag gnucashtester:${OS_DISTTAG} \
+                 --build-arg OS_DISTTAG=${OS_DISTTAG} \
+                 --build-arg GNC_PHASES=build,install \
+                 --build-arg GNC_GIT_CHECKOUT=$(cut -f 1 gnucash.commithash.cached) \
+                 .
+
+test_script:
+- sh: |
+    set -e
+    docker run --init \
+               --tty \
+               --env GNC_PHASES=test \
+               --env GNC_EXIT_WITH_RESULT=1 \
+               --name gnucashtester-${OS_DISTTAG} \
+               gnucashtester:${OS_DISTTAG}
+    docker cp gnucashtester-${OS_DISTTAG}:/build/Testing ./
+    curl --retry 3 -F 'file=@./Testing/Temporary/jUnitResults.xml' "https://ci.appveyor.com/api/testresults/junit/${APPVEYOR_JOB_ID}"
+
+artifacts:
+- path: Testing/2*/Test.xml
+  name: ctest raw xml
+- path: Testing/Temporary/CTestCostData.txt
+  name: CTestCostData.txt
+- path: Testing/Temporary/LastTest*.log
+  name: LastTest.log
+- path: Testing/Temporary/jUnitResults.xml
+  name: junit test xml
