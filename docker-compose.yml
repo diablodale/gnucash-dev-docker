@@ -133,6 +133,22 @@ services:
       - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
       - GNC_GIT_CHECKOUT=3.5
 
+  debian-10:
+    build:
+      context: .
+      dockerfile: debian.dockerfile
+      args:
+        - OS_DIST=debian
+        - OS_TAG=buster
+    image: gnucashbuilder:debian-10
+    container_name: gnucashbuilder-debian-10
+    init: true
+    tty: true
+    stdin_open: true
+    environment:
+      - PLATFORM_CMAKE_OPTS=-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON
+      - GNC_GIT_CHECKOUT=3.5
+
   archlinux:
     build:
       context: .
