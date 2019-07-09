@@ -7,13 +7,12 @@ branches:
 skip_tags: true
 max_jobs: 1 # build cache usage depends on sequential non-parallel jobs
 image: Ubuntu1804
-shallow_clone: true
 clone_depth: 1
+shallow_clone: true
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   DOCKERHUBUSER: diablodale
   DOCKERHUBREPO: gnucashbuilder
-  GROUP_OS_DISTTAG: all
   matrix:
     - OS_DISTTAG: ubuntu-14.04
     - OS_DISTTAG: ubuntu-16.04
@@ -29,19 +28,6 @@ environment:
     - OS_DISTTAG: fedora-28
     - OS_DISTTAG: fedora-29
     - OS_DISTTAG: fedora-30
-
-for:
-  -
-    matrix:
-      except:
-        - GROUP_OS_DISTTAG: all
-        - GROUP_OS_DISTTAG: pull-request
-          OS_DISTTAG: ubuntu-14.04
-        - GROUP_OS_DISTTAG: pull-request
-          OS_DISTTAG: archlinux
-    branches:
-      except:
-        - /.*/
 
 # cache is restored after init script, after project repo clone, before install script
 cache:
@@ -100,6 +86,7 @@ build_script:
 
 test_script:
 - sh: |
+    #!/bin/bash
     set -e
     docker run --init \
                --tty \

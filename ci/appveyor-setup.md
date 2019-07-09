@@ -26,7 +26,7 @@ variables `GNC_GIT_CHECKOUT` and list of `OS_DISTTAG`.
 * `GNC_GIT_CHECKOUT` is utilized by the Docker files; it  supports any
   term you can use on `git checkout ${GNC_GIT_CHECKOUT}` such as a branch, tag, commit hash, etc.
 
-### GnuCash 3.5, five operating systems, built 5th of every month
+### GnuCash 3.5, fourteen operating systems, built 5th of every month
 
 Monthly compiles of stable releases can be useful to validate dependencies
 such as updated packages, OS patches, date/time handling (Y2K), etc.
@@ -51,14 +51,6 @@ such as updated packages, OS patches, date/time handling (Y2K), etc.
     * `GNC_GIT_CHECKOUT = 3.5`  
     * *Only if docker builder images are in secure registry*  
       `DOCKERHUBPW = <Click lock icon, then type/paste in password>`
-  * Click (Add build matrix group) five times.
-  * Under each of the five groups, click (Add group variable).
-  * Set each variable under the five groups  
-    `OS_DISTTAG = ubuntu-14.04`  
-    `OS_DISTTAG = ubuntu-19.04`  
-    `OS_DISTTAG = centos-7`  
-    `OS_DISTTAG = opensuse-15.0`  
-    `OS_DISTTAG = fedora-29`  
   * Click (Save) at the bottom
 * Optionally, update AppVeyor project URL.
   * AppVeyor may provide a random project URL, e.g.  
@@ -68,7 +60,7 @@ such as updated packages, OS patches, date/time handling (Y2K), etc.
   * Edit the settings inside `ci/appveyor-update-project-slug.sh` and execute on
     a Linux computer. You get the API key from step 4 of `user` setup above.
 
-### GnuCash maint, two operating systems, built each day
+### GnuCash maint, fourteen operating systems, built each day
 
 Same settings as above except the following:
 
@@ -80,15 +72,11 @@ Same settings as above except the following:
 * Environment settings
   * Environment variables  
     * `GNC_GIT_CHECKOUT = maint`  
-  * Click (Add build matrix group) five times.
-  * Under each of the five groups, click (Add group variable).
-  * Set each variable under the five groups  
-    `OS_DISTTAG = ubuntu-14.04`  
-    `OS_DISTTAG = archlinux`  
   * Click (Save) at the bottom
 
 ### GnuCash commit and pull request validation/integration
 
 * This is best integrated by enabling the AppVeyor GitHub App (webhooks, etc.)
   on the main GnuCash repo so that GitHub will notify AppVeyor on pushes, commits, PRs, etc.
+* Due to AppVeyor bug, a separate appveyor.yml is necessary to limit the number of operating systems.
 * Optionally, including (or submodule integrating) these CI files into the main GnuCash repo.
