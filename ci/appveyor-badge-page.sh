@@ -20,12 +20,11 @@
 
 # Usage:
 #   appveyor-badge-page.sh --account <accountname>
-#                          --project <projectname>
-#                          --checkout <git pathspec> [--checkout <git pathspec>...]
+#                          --project <projectslug> [--project <projectslug>...]
 #                          OSDIST [OSDIST...]
 #
 # Example:
-#   appveyor-badge-page.sh --account gnucashbuilder --project gnucash-dev-docker --checkout 3.5 --checkout maint ubuntu-14.04 debian-8 centos-7
+#   appveyor-badge-page.sh --account gnucashbuilder --project gnucash-3-5 --project gnucash-maint ubuntu-14.04 debian-8 centos-7
 #   Creates two tables: 3.5, maint
 #   Each table has three rows: ubuntu-14.04, debian-8, centos-7
 #   Each row has two badges: build results, test results
@@ -37,18 +36,17 @@ ENDPOINT='https://your.nodeservice.com/endpointpath' # no slash at end
 help() {
     echo "Usage:"
     echo "  appveyor-badge-page.sh --account <accountname>"
-    echo "                         --project <projectname>"
-    echo "                         --checkout <git pathspec> [--checkout <git pathspec>...]"
+    echo "                         --project <projectslug> [--project <projectslug>...]"
     echo "                         OSDIST [OSDIST...]"
     echo "Example:"
-    echo "  appveyor-badge-page.sh --account gnucashbuilder --project gnucash-dev-docker --checkout 3.5 --checkout maint ubuntu-14.04 debian-8 centos-7"
+    echo "  appveyor-badge-page.sh --account gnucashbuilder --project gnucash-3-5 --project gnucash-maint ubuntu-14.04 debian-8 centos-7"
     echo "  Creates two tables: 3.5, maint"
     echo "  Each table has three rows: ubuntu-14.04, debian-8, centos-7"
     echo "  Each row has two badges: build results, test results"
     echo "  The first table, first row, first badge will be build results for GnuCash 3.5 on Ubuntu 14.04"
 }
 
-CHECKOUT=''
+PROJECTLIST=''
 OSLIST=''
 while (( "$#" )); do
     case "$1" in
@@ -57,11 +55,7 @@ while (( "$#" )); do
             shift 2
             ;;
         --project)
-            PROJECT="$2"
-            shift 2
-            ;;
-        --checkout)
-            CHECKOUT="$CHECKOUT $2"
+            PROJECTLIST="$PROJECTLIST $2"
             shift 2
             ;;
         --help)
@@ -82,33 +76,34 @@ while (( "$#" )); do
     esac
 done
 
-if [[ -z "$ACCOUNT" || -z "$PROJECT" || -z "$CHECKOUT" || -z "$OSLIST" ]]; then
+if [[ -z "$ACCOUNT" || -z "$PROJECTLIST" || -z "$OSLIST" ]]; then
     echo "Error: missing parameters" >&2
     exit 1
 fi
 
 SLASH='/'
-ENDPOINT="${ENDPOINT}/${ACCOUNT}/${PROJECT}/"
-ENDPOINT="${ENDPOINT//$SLASH/%2F}"
-ENDPOINT="${ENDPOINT//:/%3A}"
-PREFIX="${SHIELD}${ENDPOINT}"
-CLICK="https://ci.appveyor.com/project/${ACCOUNT}/${PROJECT}"
 
 badge_table() {
-    CHECKOUT="$1"
+    PROJECT="$1"
     shift
-    echo -e "\n## $CHECKOUT\n"
+    PROJECTENDPOINT="${ENDPOINT}/${ACCOUNT}/${PROJECT}/"
+    PROJECTENDPOINT="${PROJECTENDPOINT//$SLASH/%2F}"
+    PROJECTENDPOINT="${PROJECTENDPOINT//:/%3A}"
+    PREFIX="${SHIELD}${PROJECTENDPOINT}"
+    CLICK="https://ci.appveyor.com/project/${ACCOUNT}/${PROJECT}"
+
+    echo -e "\n## $PROJECT\n"
     echo '| OS   | Build | Test |'
     echo '| :--- | :---  | :--- |'
     for OS in $@; do
         echo -n "|${OS}"
-        echo -n "|[![${PROJECT} build](${PREFIX}build%3Fname%3D${OS}%26name%3D${CHECKOUT})](${CLICK})"
-        echo    "|[![${PROJECT} tests](${PREFIX}tests%3Fname%3D${OS}%26name%3D${CHECKOUT})](${CLICK})|"
+        echo -n "|[![${PROJECT} ${OS} build](${PREFIX}build%3Fname%3D${OS})](${CLICK})"
+        echo    "|[![${PROJECT} ${OS} tests](${PREFIX}tests%3Fname%3D${OS})](${CLICK})|"
     done
 }
 
 echo "# GnuCash Build Status"
 
-for TABLE in $CHECKOUT; do
-    badge_table $TABLE $OSLIST
+for PROJECT in $PROJECTLIST; do
+    badge_table $PROJECT $OSLIST
 done
