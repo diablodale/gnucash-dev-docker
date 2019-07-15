@@ -120,7 +120,6 @@ volumes:
 docker run -v /home/user1/build/gnucash:/build gnucashbuild:ubuntu-16.04
 ```
 
-
 ## Technical Notes
 
 * docker-compose file version 2.4 enables several of the below features
