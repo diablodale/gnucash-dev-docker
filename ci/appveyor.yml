@@ -30,13 +30,10 @@ environment:
     - OS_DISTTAG: fedora-30
 
 # cache is restored after init script, after project repo clone, before install script
-cache:
-  - gnucash.commithash.cached
-
 install:
 - sh: |
     #!/bin/bash
-    # This script is only needed for when these CI files are in a separate repo than the core GnuCash repo
+    # This script is needed for when these CI files are in a separate repo than the core GnuCash repo
     set -e
     if [[ (-z "$GNC_GIT_CHECKOUT") || (-z "$APPVEYOR_BUILD_ID") ]]; then
       echo 'Error. GNC_GIT_CHECKOUT and APPVEYOR_BUILD_ID env variables are not all defined' >&2
@@ -44,32 +41,54 @@ install:
       echo "       APPVEYOR_BUILD_ID=${APPVEYOR_BUILD_ID}" >&2
       exit 1
     fi
-    if [[ ! -e gnucash.commithash.cached || -z "$(egrep "${APPVEYOR_BUILD_ID}$" gnucash.commithash.cached)" ]]; then
-      OBJECTHASH="$(curl --silent --fail --location --retry 3 --connect-timeout 5 -H 'Accept: application/vnd.github.VERSION.sha' "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}")"
-      if [[ ("$?" == "0") && -n "$OBJECTHASH" ]]; then
-        COMMITHASH="$OBJECTHASH"
-        echo -e "${COMMITHASH}\t${APPVEYOR_BUILD_ID}" > gnucash.commithash.cached
-        curl --retry 3 --silent --show-error --fail --output /dev/null -X POST -H 'Content-Type: application/json' -d "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
-        echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
-      else
-        echo 'Error. GNC_GIT_CHECKOUT env variable is not a valid GnuCash git repo ref or commit hash' >&2
+    # workaround for appveyor bugs in REST APIs, yml 'for:' construct, and lack of build cache across jobs
+    curl --silent --fail --location --retry 3 --connect-timeout 5 --header 'Content-Type: application/json' "https://ci.appveyor.com/api/projects/${APPVEYOR_ACCOUNT_NAME}/${APPVEYOR_PROJECT_SLUG}/build/${APPVEYOR_BUILD_VERSION}" > gncbuild.json
+    if [[ ("$?" != '0') || ! -s gncbuild.json ]]; then
+      echo 'Error retrieving GnuCash build json from AppVeyor' >&2
+      exit 1
+    fi
+    COMMITHASH=$(egrep -o 'GnCsHa[^"]+' gncbuild.json | cut -c 7-)
+    if [[ -z "$COMMITHASH" ]]; then
+      curl --silent --fail --location --retry 3 --connect-timeout 5 "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}" > gnccommit.json
+      if [[ ("$?" != "0") || ! -s gnccommit.json ]]; then
+        echo "Error retrieving GnuCash git commit from GitHub with GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}" >&2
         exit 1
       fi
+      sudo apt-get -qq update
+      sudo DEBIAN_FRONTEND=noninteractive apt-get -yqq install jq
+      OBJECTHASH="$(jq --raw-output '.sha' < gnccommit.json)"
+      if [[ -z "$OBJECTHASH" ]]; then
+        echo 'Error. Unable to parse GitHub commit json for sha hash' >&2
+        exit 1
+      fi
+      COMMITHASH="$OBJECTHASH"
+      jq '{
+          "committed":.commit.committer.date,
+          "committerName":.commit.committer.name,
+          "committerEmail":.commit.committer.email,
+          "authorName":.commit.author.name,
+          "authorEmail":.commit.author.email,
+          "message":"Commit \(.sha[0:7]): \(.commit.message)\nGnCsHa\(.sha)"
+          }' < gnccommit.json > buildjob.json
+      if [[ ! -s buildjob.json ]]; then
+        echo 'Error. Unable to parse GitHub commit json for commit details' >&2
+        exit 1
+      fi
+      curl --retry 3 --silent --show-error --fail --output /dev/null --request PUT --header 'Content-Type: application/json' --data "@buildjob.json" "${APPVEYOR_API_URL}api/build"
+      curl --retry 3 --silent --show-error --fail --output /dev/null --request POST --header 'Content-Type: application/json' --data "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
+      echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
     else
-      COMMITHASH="$(cut -f 1 gnucash.commithash.cached)"
-      if [ -z "$COMMITHASH" ]; then
-        echo 'Error. Malformed file gnucash.commithash.cached' >&2
-        exit 1
-      fi
       echo "GnuCash commit ${COMMITHASH} retrieved lock for all jobs across this build"
     fi
+    echo "export COMMITHASH='${COMMITHASH}'" > gnucash.commithash
 
 build_script:
 - sh: |
     #!/bin/bash
     set -e
-    if [[ (-z "$DOCKERHUBUSER") || (-z "$DOCKERHUBREPO") || (-z "$OS_DISTTAG") ]]; then
-      echo 'Error. DOCKERHUBUSER, DOCKERHUBREPO, and OS_DISTTAG env variables are not all defined' >&2
+    . ./gnucash.commithash
+    if [[ (-z "$DOCKERHUBUSER") || (-z "$DOCKERHUBREPO") || (-z "$OS_DISTTAG") || (-z "$COMMITHASH") ]]; then
+      echo 'Error. DOCKERHUBUSER, DOCKERHUBREPO, OS_DISTTAG, and COMMITHASH env variables are not all defined' >&2
       echo "       DOCKERHUBUSER=${DOCKERHUBUSER}" >&2
       echo "       DOCKERHUBREPO=${DOCKERHUBREPO}" >&2
       echo "       OS_DISTTAG=${OS_DISTTAG}" >&2
@@ -86,7 +105,7 @@ build_script:
                  --tag gnucashtester:${OS_DISTTAG} \
                  --build-arg OS_DISTTAG=${OS_DISTTAG} \
                  --build-arg GNC_PHASES=build,install \
-                 --build-arg GNC_GIT_CHECKOUT=$(cut -f 1 gnucash.commithash.cached) \
+                 --build-arg GNC_GIT_CHECKOUT=${COMMITHASH} \
                  .
 
 test_script:
