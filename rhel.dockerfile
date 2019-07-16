@@ -49,17 +49,17 @@ RUN PKG_BASE="gcc-c++ cmake3 glib2-devel gtk3-devel guile-devel libxml2-devel ge
 
 # cmake, gtest setup
 # enable Boost and Cmake from base and EPEL repos rather than hacking the source, e.g. http://gnucash.1415818.n4.nabble.com/GNC-GnuCash-3-3-builds-on-CentOS-7-td4704432.html
-# use update-alternatives to make canonical names/locations; set build options to point to EPEL-specific boost library naming
-RUN update-alternatives --install /usr/local/bin/cmake \
-        cmake /usr/bin/cmake3 20 \
-        --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-        --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-        --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-        --family cmake && \
+# update-alternatives for canonical names/locations; enables build options to point to EPEL-specific boost library naming
+RUN update-alternatives \
+        --install /usr/local/bin/cmake  cmake  /usr/bin/cmake3 20 \
+        --slave   /usr/local/bin/ctest  ctest  /usr/bin/ctest3 \
+        --slave   /usr/local/bin/cpack  cpack  /usr/bin/cpack3 \
+        --slave   /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 && \
     set -o pipefail && \
-    update-alternatives --install /usr/local/include/boost \
-        boost "$(ls -d -1 -v -r /usr/include/boost1* 2> /dev/null | head -1 || echo '/usr/include')/boost" 20
-RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
+    EPEL_BOOST="$(ls -d -1 -v -r /usr/include/boost1* 2> /dev/null | head -1 || echo '/usr/include')/boost" && \
+    update-alternatives \
+        --install /usr/local/include/boost boost "$EPEL_BOOST" 20 && \
+    git clone https://github.com/google/googletest -b release-1.8.0 gtest
 ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
 

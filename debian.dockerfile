@@ -40,9 +40,24 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 # cmake, gtest setup
-# use update-alternatives to make canonical names/locations; enables swig3 on debian 8 with old cmake3
-RUN update-alternatives --install /usr/local/bin/swig swig /usr/bin/swig3.0 20
-RUN git clone https://github.com/google/googletest -b release-1.8.0 gtest
+# optional forced cmake minimum version, e.g. enables debian-8 to build GnuCash 3.5-3.6 with swig3
+# update-alternatives for canonical names/locations
+ARG FORCE_CMAKE=3.5.1
+RUN [ -z "$FORCE_CMAKE" ] || \
+    if [ "$( ( (echo $FORCE_CMAKE; cmake --version | head -1 | grep -o -E '\b[0-9.]{3,}\b') | sort -V) | head -1)" != "$FORCE_CMAKE" ]; then \
+        CMAKE_URL="https://cmake.org/files/v$(echo $FORCE_CMAKE | cut -d . -f -2)/cmake-${FORCE_CMAKE}-Linux-x86_64.sh" && \
+        curl --silent --show-error --output ./cmake-install.sh $CMAKE_URL && \
+        chmod 700 ./cmake-install.sh && \
+        mkdir -p /opt/cmake && \
+        ./cmake-install.sh --skip-license --exclude-subdir --prefix=/opt/cmake && \
+        rm -f ./cmake-install.sh && \
+        update-alternatives \
+            --install /usr/local/bin/cmake  cmake  /opt/cmake/bin/cmake 20 \
+            --slave   /usr/local/bin/ctest  ctest  /opt/cmake/bin/ctest \
+            --slave   /usr/local/bin/cpack  cpack  /opt/cmake/bin/cpack \
+            --slave   /usr/local/bin/ccmake ccmake /opt/cmake/bin/ccmake ; \
+    fi && \
+    git clone https://github.com/google/googletest -b release-1.8.0 gtest
 ENV GTEST_ROOT=/gtest/googletest \
     GMOCK_ROOT=/gtest/googlemock
 
