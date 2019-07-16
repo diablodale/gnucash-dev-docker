@@ -48,16 +48,21 @@ install:
       OBJECTHASH="$(curl --silent --fail --location --retry 3 --connect-timeout 5 -H 'Accept: application/vnd.github.VERSION.sha' "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}")"
       if [[ ("$?" == "0") && -n "$OBJECTHASH" ]]; then
         COMMITHASH="$OBJECTHASH"
+        echo -e "${COMMITHASH}\t${APPVEYOR_BUILD_ID}" > gnucash.commithash.cached
+        curl --retry 3 --silent --show-error --fail --output /dev/null -X POST -H 'Content-Type: application/json' -d "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
+        echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
       else
         echo 'Error. GNC_GIT_CHECKOUT env variable is not a valid GnuCash git repo ref or commit hash' >&2
         exit 1
       fi
     else
       COMMITHASH="$(cut -f 1 gnucash.commithash.cached)"
+      if [ -z "$COMMITHASH" ]; then
+        echo 'Error. Malformed file gnucash.commithash.cached' >&2
+        exit 1
+      fi
+      echo "GnuCash commit ${COMMITHASH} retrieved lock for all jobs across this build"
     fi
-    echo -e "${COMMITHASH}\t${APPVEYOR_BUILD_ID}" > gnucash.commithash.cached
-    curl --retry 3 --silent --show-error --fail --output /dev/null -X POST -H 'Content-Type: application/json' -d "{\"category\":\"information\", \"message\":\"GnuCash commit ${COMMITHASH} locked for all jobs across this build\"}" "${APPVEYOR_API_URL}api/build/messages"
-    echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
 
 build_script:
 - sh: |
