@@ -2,6 +2,8 @@
 
 ## GnuCash maint branch
 
+Compiled and tested every day at 05:45 UTC
+
 | OS   | Build | Test |
 | :--- | :---  | :--- |
 |ubuntu-14.04|[![gnucash-maint ubuntu-14.04 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-maint%2Fbuild%3Fname%3Dubuntu-14.04)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-maint)|[![gnucash-maint ubuntu-14.04 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-maint%2Ftests%3Fname%3Dubuntu-14.04)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-maint)|
@@ -21,6 +23,8 @@
 
 ## GnuCash 3.6
 
+Compiled and tested every 6th of the month at 22:22 UTC
+
 | OS   | Build | Test |
 | :--- | :---  | :--- |
 |ubuntu-14.04|[![gnucash-3-6 ubuntu-14.04 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Fbuild%3Fname%3Dubuntu-14.04)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|[![gnucash-3-6 ubuntu-14.04 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Ftests%3Fname%3Dubuntu-14.04)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|
@@ -39,6 +43,8 @@
 |opensuse-15.1|[![gnucash-3-6 opensuse-15.1 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Fbuild%3Fname%3Dopensuse-15.1)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|[![gnucash-3-6 opensuse-15.1 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Ftests%3Fname%3Dopensuse-15.1)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|
 
 ## GnuCash 3.5
+
+Compiled and tested every 5th of the month at 22:22 UTC
 
 | OS   | Build | Test |
 | :--- | :---  | :--- |
