@@ -7,10 +7,10 @@ Copyright (C) 2019 Dale Phurrough <dale@hidale.com>
 ## Setup
 
 1. You need a Docker host/engine on a Linux-based OS.
-   Other host OS are not yet supported. Docker has free and easy instructions at
-   <https://docs.docker.com/install/>
-2. Strongly recommend you have `docker-compose` installed
-   <https://github.com/docker/compose/releases>
+   Other host OS are not yet supported. Docker has
+   [free and easy instructions](https://docs.docker.com/install/)
+2. Strongly recommend you have
+   [`docker-compose` installed](https://github.com/docker/compose/releases)
 3. `git clone` this repo into a folder on your host
 
 ## Quick Start Example
@@ -38,7 +38,20 @@ export DISPLAY=mycomputer:0.0   # replace mycomputer with hostname or IP address
 
 ## Build Choices and Options
 
-The Dockerfiles can be used direct with `docker run` or more easily with
+### Prebuilt on DockerHub
+
+Prebuilt containers are on [DockerHub](https://hub.docker.com/r/diablodale/gnucashbuilder) as `diablodale/gnucashbuilder:<OS_DIST_TAG>` with the same names as in the `docker-compose.yml`. These containers are the built Dockerfiles. You could use these to `docker run` a fresh compile, test, and/or install of GnuCash.
+
+```bash
+# examples pulling three of the prebuilt containers from DockerHub
+docker pull diablodale/gnucashbuilder:centos-7
+docker pull diablodale/gnucashbuilder:debian-10
+docker pull diablodale/gnucashbuilder:ubuntu-18.04
+```
+
+### Build Yourself
+
+The Dockerfiles (or pulled containers from DockerHub) can be used direct with `docker run` or more easily with
 `docker-compose`. The `docker-compose.yml` included is configured for major releases
 of **Ubuntu, Debian, Arch, CentOS, Fedora, and openSUSE Linux**. Use the same *Quick Start*
 command above with any of the OS in the file.
@@ -47,7 +60,7 @@ You can automate the install and have it appear on any desktop running X11
 by setting `GNC_PHASES` and `DISPLAY`. Inspect this file to see how new
 operating systems can be added or options changed to meet your needs.
 
-`docker-compose` documentation at <https://docs.docker.com/compose/> can help you
+[`docker-compose` documentation](https://docs.docker.com/compose/) can help you
 better understand. Naturally, you are welcome to hack `docker-compose.yml`. These
 are the build arguments and environment variables specific to this solution.
 

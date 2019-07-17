@@ -35,10 +35,10 @@ such as updated packages, OS patches, date/time handling (Y2K), etc.
   * Project name `gnucash-3.5`
   * GitHub repository `diablodale/gnucash-dev-docker`  
     *Choice depends how these CI files are integrated/not into main GnuCash repo.*
-  * Default branch `appveyor-yml-1`  
+  * Default branch `master`  
     *Choice depends on branch you desire for manual UI and cron scheduled builds. And what branch contains the `appveyor.yml` you want and how it relates to setting `Custom configuration .yml file name/location`.*
   * Do not build tags `selected`
-  * Build schedule `15 14 5 * *`  
+  * Build schedule `22 22 5 * *`  
     *Contact the AppVeyor team and briefly describe your need for scheduled builds*
   * Custom configuration .yml file name `ci/appveyor.yml`
   * Rolling builds `selected`
@@ -60,14 +60,26 @@ such as updated packages, OS patches, date/time handling (Y2K), etc.
   * Edit the settings inside `ci/appveyor-update-project-slug.sh` and execute on
     a Linux computer. You get the API key from step 4 of `user` setup above.
 
-### GnuCash maint, fourteen operating systems, built each day
+### GnuCash 3.6, fourteen operating systems, built 6th of every month
+
+Same settings as above except the following:
+
+* General settings
+  * Project name `gnucash-3.6`
+  * Build schedule `22 22 6 * *`
+  * Click (Save) at the bottom
+* Environment settings
+  * Environment variables  
+    * `GNC_GIT_CHECKOUT = 3.6`  
+  * Click (Save) at the bottom
+
+### GnuCash maint branch, fourteen operating systems, built each day
 
 Same settings as above except the following:
 
 * General settings
   * Project name `gnucash-maint`
   * Build schedule `40 5 * * *`  
-    *Contact the AppVeyor team and briefly describe your need for scheduled builds*
   * Click (Save) at the bottom
 * Environment settings
   * Environment variables  
