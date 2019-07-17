@@ -1,6 +1,6 @@
-# GnuCash Build Status
+# GnuCash Build and Test Results
 
-## gnucash-maint
+## GnuCash maint branch
 
 | OS   | Build | Test |
 | :--- | :---  | :--- |
@@ -19,7 +19,7 @@
 |opensuse-15.0|[![gnucash-maint opensuse-15.0 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-maint%2Fbuild%3Fname%3Dopensuse-15.0)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-maint)|[![gnucash-maint opensuse-15.0 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-maint%2Ftests%3Fname%3Dopensuse-15.0)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-maint)|
 |opensuse-15.1|[![gnucash-maint opensuse-15.1 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-maint%2Fbuild%3Fname%3Dopensuse-15.1)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-maint)|[![gnucash-maint opensuse-15.1 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-maint%2Ftests%3Fname%3Dopensuse-15.1)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-maint)|
 
-## gnucash-3-6
+## GnuCash 3.6
 
 | OS   | Build | Test |
 | :--- | :---  | :--- |
@@ -38,7 +38,7 @@
 |opensuse-15.0|[![gnucash-3-6 opensuse-15.0 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Fbuild%3Fname%3Dopensuse-15.0)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|[![gnucash-3-6 opensuse-15.0 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Ftests%3Fname%3Dopensuse-15.0)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|
 |opensuse-15.1|[![gnucash-3-6 opensuse-15.1 build](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Fbuild%3Fname%3Dopensuse-15.1)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|[![gnucash-3-6 opensuse-15.1 tests](https://img.shields.io/endpoint.svg?url=https%3A%2F%2F8r8pdeliy4.execute-api.us-east-1.amazonaws.com%2Fprod%2Fappveyor%2Fjob%2Fgnucashbuilder%2Fgnucash-3-6%2Ftests%3Fname%3Dopensuse-15.1)](https://ci.appveyor.com/project/gnucashbuilder/gnucash-3-6)|
 
-## gnucash-3-5
+## GnuCash 3.5
 
 | OS   | Build | Test |
 | :--- | :---  | :--- |
