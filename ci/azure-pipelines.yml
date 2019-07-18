@@ -63,18 +63,18 @@ stages:
     timeoutInMinutes: 30
     cancelTimeoutInMinutes: 2
     variables:
-      GNC_GIT_CHECKOUT: $[ dependencies.lockCommitStage.outputs['setCommitHashVarStep.COMMITHASH'] ]
+      GNC_GIT_CHECKOUT: $[ dependencies.lockCommitStage ]
     steps:
     - checkout: none
     - script: |
-        # modify as Azure runs docker with non-root user
         set -x
         sudo chmod 777 /
         sudo sh -c 'find / -maxdepth 1 -type f -print0 | xargs -0 chmod 755'
-        sudo chmod 755 /root
-        sudo chmod 755 /root/.*
+        sudo chmod 755 /root /root/.bashrc
         whoami
         ls -la /
+      displayName: non-root user fix
+    - script: |
         . /root/.bashrc
         /commonbuild
       displayName: 'Build'
