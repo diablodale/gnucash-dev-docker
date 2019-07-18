@@ -6,45 +6,87 @@
 trigger:
 - azure1
 pr: none # will disable PR builds entirely; will not disable CI triggers
+variables:
+  GNC_GIT_CHECKOUT: '3.5'
+  GNC_EXIT_WITH_RESULT: '1'
+  PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
 
+stages:
+- stage: lockCommitStage
+  displayName: Lock GnuCash commit
+  jobs:
+  - job: lockCommitJob
+    displayName: Lock commit job
+    pool:
+      vmImage: 'ubuntu-latest'
+    timeoutInMinutes: 5
+    cancelTimeoutInMinutes: 1
+    steps:
+    - checkout: none
+    - script: |
+        # This script is needed for when these CI files are in a separate repo than the core GnuCash repo
+        set -e
+        curl --silent --fail --location --retry 3 --connect-timeout 5 "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}" > gnccommit.json
+        if [[ ("$?" != "0") || ! -s gnccommit.json ]]; then
+          echo "Error retrieving GnuCash git commit from GitHub with GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}" >&2
+          exit 1
+        fi
+        sudo apt-get -qq update
+        sudo DEBIAN_FRONTEND=noninteractive apt-get -yqq install jq
+        OBJECTHASH="$(jq --raw-output '.sha' < gnccommit.json)"
+        if [[ -z "$OBJECTHASH" ]]; then
+          echo 'Error. Unable to parse GitHub commit json for sha hash' >&2
+          exit 1
+        fi
+        COMMITHASH="$OBJECTHASH"
+        echo "##vso[task.setvariable variable=COMMITHASH;isOutput=true]${COMMITHASH}"
+        echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
+      name: setCommitHashVarStep
 
-jobs:
-- job: buildTest
-  displayName: Build and Test  # friendly name to display in the UI
-  strategy:
-    maxParallel: 6
-    matrix:
-      ubuntu_14_04:
-        OS_DISTTAG: ubuntu-14.04
-      ubuntu_16_04:
-        OS_DISTTAG: ubuntu-16.04
-  variables:
-    GNC_EXIT_WITH_RESULT: '1'
-    GNC_GIT_CHECKOUT: '3.5'
-    PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
-  continueOnError: true  # 'true' if future jobs should run even if this job fails; defaults to 'false'
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: $[format('diablodale/gnucashbuilder:{0}',variables['OS_DISTTAG'])]
-  timeoutInMinutes: 30
-  cancelTimeoutInMinutes: 2
-  steps:
-  - checkout: self
-    fetchDepth: 1
-  - script: |
-      cat /etc/issue
-      uname -a
-      whoami
-      ls -la /
-      /commonbuild
-    displayName: 'Build'
-    env:
-      GNC_PHASES: 'build'
-  - script: /commonbuild
-    displayName: 'Install'
-    env:
-      GNC_PHASES: 'install'
-  - script: /commonbuild
-    displayName: 'Test'
-    env:
-      GNC_PHASES: 'test'
+- stage: buildTestState
+  dependsOn: lockCommitStage
+  displayName: Build and Test State
+  jobs:
+  - job: buildTestJob
+    displayName: Build and Test Job
+    strategy:
+      maxParallel: 6
+      matrix:
+        ubuntu_14_04:
+          OS_DISTTAG: ubuntu-14.04
+        ubuntu_16_04:
+          OS_DISTTAG: ubuntu-16.04
+    continueOnError: true  # 'true' if future jobs should run even if this job fails; defaults to 'false'
+    pool:
+      vmImage: 'ubuntu-latest'
+    container: $[format('diablodale/gnucashbuilder:{0}',variables['OS_DISTTAG'])]
+    timeoutInMinutes: 30
+    cancelTimeoutInMinutes: 2
+    variables:
+      GNC_GIT_CHECKOUT: $[ dependencies.lockCommitStage.lockCommitJob.outputs['setCommitHashVarStep.COMMITHASH'] ]
+    steps:
+    - checkout: none
+    - script: |
+        # modify as Azure runs docker with non-root user
+        sudo chmod 777 /
+        sudo chmod u=rwX,go=rX /* /root/.*
+        sudo chmod /
+        whoami
+        ls -la /
+        . /root/.bashrc
+        /commonbuild
+      displayName: 'Build'
+      env:
+        GNC_PHASES: 'build'
+    - script: |
+        . /root/.bashrc
+        /commonbuild
+      displayName: 'Install'
+      env:
+        GNC_PHASES: 'install'
+    - script: |
+        . /root/.bashrc
+        /commonbuild
+      displayName: 'Test'
+      env:
+        GNC_PHASES: 'test'
