@@ -30,7 +30,7 @@ jobs:
   timeoutInMinutes: 30
   cancelTimeoutInMinutes: 2
   steps:
-  - checkout:
+  - checkout: self
     fetchDepth: 1
   - script: /commonbuild
     displayName: 'Build'
