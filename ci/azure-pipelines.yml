@@ -5,6 +5,7 @@
 
 trigger:
 - azure1
+pr: none # will disable PR builds entirely; will not disable CI triggers
 
 pool:
   vmImage: 'ubuntu-latest'
