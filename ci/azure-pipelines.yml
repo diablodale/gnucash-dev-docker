@@ -14,9 +14,9 @@ jobs:
   strategy:
     maxParallel: 6
     matrix:
-      ubuntu_14.04:
+      ubuntu_14_04:
         OS_DISTTAG: ubuntu-14.04
-      ubuntu_16.04:
+      ubuntu_16_04:
         OS_DISTTAG: ubuntu-16.04
   variables:
     GNC_EXIT_WITH_RESULT: '1'
@@ -26,7 +26,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container:
-    image: $[ format('diablodale/gnucashbuilder:{0}', variables.OS_DISTTAG ]
+    image: $[ format('diablodale/gnucashbuilder:{0}', variables['OS_DISTTAG']) ]
   timeoutInMinutes: 30
   cancelTimeoutInMinutes: 2
   steps:
