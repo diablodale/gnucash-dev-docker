@@ -26,7 +26,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container:
-    image: ${{ format('diablodale/gnucashbuilder:{0}', variables['OS_DISTTAG']) }}
+    image: $[format('diablodale/gnucashbuilder:{0}',variables['OS_DISTTAG'])]
   timeoutInMinutes: 30
   cancelTimeoutInMinutes: 2
   steps:
