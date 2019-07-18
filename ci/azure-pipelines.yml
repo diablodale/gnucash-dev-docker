@@ -7,14 +7,40 @@ trigger:
 - azure1
 pr: none # will disable PR builds entirely; will not disable CI triggers
 
-pool:
-  vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+jobs:
+- job: buildTest
+  displayName: Build and Test  # friendly name to display in the UI
+  strategy:
+    maxParallel: 6
+    matrix:
+      ubuntu_14.04:
+        OS_DISTTAG: ubuntu-14.04
+      ubuntu_16.04:
+        OS_DISTTAG: ubuntu-16.04
+  variables:
+    GNC_EXIT_WITH_RESULT: '1'
+    GNC_GIT_CHECKOUT: '3.5'
+    PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
+  continueOnError: true  # 'true' if future jobs should run even if this job fails; defaults to 'false'
+  pool:
+    vmImage: 'ubuntu-latest'
+  container:
+    image: $[ format('diablodale/gnucashbuilder:{0}', variables.OS_DISTTAG ]
+  timeoutInMinutes: 30
+  cancelTimeoutInMinutes: 2
+  steps:
+  - checkout:
+    fetchDepth: 1
+  - script: /commonbuild
+    displayName: 'Build'
+    env:
+      GNC_PHASES: 'build'
+  - script: /commonbuild
+    displayName: 'Install'
+    env:
+      GNC_PHASES: 'install'
+  - script: /commonbuild
+    displayName: 'Test'
+    env:
+      GNC_PHASES: 'test'
