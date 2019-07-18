@@ -38,13 +38,13 @@ stages:
           echo 'Error. Unable to parse GitHub commit json for sha hash' >&2
           exit 1
         fi
-        COMMITHASH="$OBJECTHASH"
-        echo "##vso[task.setvariable variable=COMMITHASH;isOutput=true]${COMMITHASH}"
-        echo "GnuCash commit ${COMMITHASH} locked for all jobs across this build"
-      name: setCommitHashVarStep
+        echo "$OBJECTHASH" > commithash
+        echo "GnuCash commit ${OBJECTHASH} locked for all jobs across this build"
+      displayName: Resolve Commit Hash
+    - publish: commithash
+      artifact: gnucash_commithash
 
 - stage: buildTestState
-  dependsOn: lockCommitStage
   displayName: Build Test
   jobs:
   - job: buildTestJob
@@ -62,16 +62,21 @@ stages:
     container: $[format('diablodale/gnucashbuilder:{0}',variables['OS_DISTTAG'])]
     timeoutInMinutes: 30
     cancelTimeoutInMinutes: 2
-    variables:
-      GNC_GIT_CHECKOUT: $[ dependencies.lockCommitStage ]
     steps:
     - checkout: none
+    - download: current
+      artifact: gnucash_commithash
+    - script: |
+        ls -la ${PIPELINE_WORKSPACE}
+        ls -la ${PIPELINE_WORKSPACE}/gnucash_commithash
+        echo "##vso[task.setvariable variable=GNC_GIT_CHECKOUT]$(< ${PIPELINE_WORKSPACE}/gnucash_commithash/commithash)"
     - script: |
         set -x
         sudo chmod 777 /
         sudo sh -c 'find / -maxdepth 1 -type f -print0 | xargs -0 chmod 755'
         sudo chmod 755 /root /root/.bashrc
         whoami
+        echo "GNC_GIT_CHECKOUT is ${GNC_GIT_CHECKOUT}"
         ls -la /
       displayName: non-root user fix
     - script: |
