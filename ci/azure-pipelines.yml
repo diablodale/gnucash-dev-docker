@@ -48,14 +48,38 @@ stages:
   displayName: Build Test
   jobs:
   - job: buildTestJob
-    displayName: Job
+    displayName: '-'
     strategy:
-      maxParallel: 6
+      maxParallel: 9
       matrix:
         ubuntu_14_04:
           OS_DISTTAG: ubuntu-14.04
         ubuntu_16_04:
           OS_DISTTAG: ubuntu-16.04
+        ubuntu_18_04:
+          OS_DISTTAG: ubuntu-18.04
+        ubuntu_19_04:
+          OS_DISTTAG: ubuntu-19.04
+        debian_8:
+          OS_DISTTAG: debian-8
+        debian_9:
+          OS_DISTTAG: debian-9
+        debian_10:
+          OS_DISTTAG: debian-10
+        archlinux:
+          OS_DISTTAG: archlinux
+        centos_7:
+          OS_DISTTAG: centos-7
+        opensuse_15_0:
+          OS_DISTTAG: opensuse-15.0
+        opensuse_15_1:
+          OS_DISTTAG: opensuse-15.1
+        fedora_28:
+          OS_DISTTAG: fedora-28
+        fedora_29:
+          OS_DISTTAG: fedora-29
+        fedora_30:
+          OS_DISTTAG: fedora-30
     continueOnError: true  # 'true' if future jobs should run even if this job fails; defaults to 'false'
     pool:
       vmImage: 'ubuntu-latest'
