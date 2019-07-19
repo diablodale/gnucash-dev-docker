@@ -142,7 +142,7 @@ stages:
       inputs:
         testResultsFormat: cTest
         testResultsFiles: 'Testing/*/Test.xml'
-        testRunTitle: $[format('{0} unit tests', variables['OS_DISTTAG'])]
+        testRunTitle: $(OS_DISTTAG) unit tests
         publishRunAttachments: true
     - script: |
         docker rm \
