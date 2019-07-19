@@ -33,36 +33,6 @@ variables:
     fedora-30
 
 stages:
-- stage: lockCommitStage
-  displayName: Lock GnuCash Commit
-  jobs:
-  - job: lockCommitJob
-    displayName: Job
-    pool:
-      vmImage: 'ubuntu-latest'
-    timeoutInMinutes: 5
-    cancelTimeoutInMinutes: 1
-    steps:
-    - checkout: none
-    - script: |
-        # This script is needed for when these CI files are in a separate repo than the core GnuCash repo
-        set -e
-        curl --silent --fail --location --retry 3 --connect-timeout 5 "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}" > gnccommit.json
-        if [[ ("$?" != "0") || ! -s gnccommit.json ]]; then
-          echo "Error retrieving GnuCash git commit from GitHub with GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}" >&2
-          exit 1
-        fi
-        OBJECTHASH="$(jq --raw-output '.sha' < gnccommit.json)"
-        if [[ -z "$OBJECTHASH" ]]; then
-          echo 'Error. Unable to parse GitHub commit json for sha hash' >&2
-          exit 1
-        fi
-        echo "$OBJECTHASH" > commithash
-        echo "GnuCash commit ${OBJECTHASH} locked for all jobs across this build"
-      displayName: Resolve Commit Hash
-    - publish: commithash
-      artifact: gnucash_commithash
-
 - stage: buildTestStage
   displayName: Build Test
   jobs:
@@ -75,9 +45,27 @@ stages:
     steps:
     - checkout: none
     - script: |
+        # needed for when these CI files are in a separate repo than the core GnuCash repo
+        set -e
+        curl --silent --fail --location --retry 3 --connect-timeout 5 "https://api.github.com/repos/gnucash/gnucash/commits/${GNC_GIT_CHECKOUT}" > gnccommit.json
+        if [[ ("$?" != "0") || ! -s gnccommit.json ]]; then
+          echo "Error retrieving GnuCash git commit from GitHub with GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}" >&2
+          exit 1
+        fi
+        OBJECTHASH="$(jq --raw-output '.sha' < gnccommit.json)"
+        if [[ -z "$OBJECTHASH" ]]; then
+          echo 'Error. Unable to parse GitHub commit json for sha hash' >&2
+          exit 1
+        fi
+        echo "##vso[task.setVariable variable=hash;isOutput=true]${OBJECTHASH}"
+        echo "GnuCash commit ${OBJECTHASH} locked across these builds where GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}"
+      name: gnccommit
+      displayName: Resolve GnuCash commit hash
+    - script: |
         MTRX=$(jq --null-input --compact-output 'env.OS_DISTLIST | split("\n") | map(select(. != "")) | map({(.|gsub("\\W";"_")): {"OS_DISTTAG": .}}) | add')
         echo "##vso[task.setVariable variable=buildVariables;isOutput=true]${MTRX}"
       name: mtrx
+      displayName: Generate matrix of OS versions
 
   - job: buildTestJob
     displayName: '-'
@@ -103,18 +91,14 @@ stages:
       PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
       DOCKERHUBUSER: 'diablodale'
       DOCKERHUBREPO: 'gnucashbuilder'
+      GNC_GIT_CHECKOUT: $[dependencies.generateJob.outputs['gnccommit.hash']]
     steps:
     - checkout: none
-    - download: current
-      artifact: gnucash_commithash
-    - script: |
-        echo "##vso[task.setvariable variable=GNC_GIT_CHECKOUT]$(< ${PIPELINE_WORKSPACE}/gnucash_commithash/commithash)"
-      displayName: Retrieve locked commit hash
     - script: |
         docker pull "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
       displayName: Download Docker image
     - script: |
-        echo "debug validate ${GNC_GIT_CHECKOUT}"
+        echo "debug commit ${GNC_GIT_CHECKOUT}"
         docker run \
         --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
         --detach \
