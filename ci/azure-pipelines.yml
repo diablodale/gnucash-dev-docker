@@ -8,7 +8,7 @@ trigger:
 pr: none # will disable PR builds entirely; will not disable CI triggers
 schedules:
 - cron: '45 5 * * *'
-  displayName: Nightly build
+  displayName: Scheduled build
   branches:
     include:
     - azure1
@@ -20,6 +20,10 @@ variables:
   PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
   DOCKERHUBUSER: 'diablodale'
   DOCKERHUBREPO: 'gnucashbuilder'
+  VARARRAY: |
+    value1
+    value2
+    value3
 
 stages:
 - stage: lockCommitStage
@@ -52,13 +56,29 @@ stages:
     - publish: commithash
       artifact: gnucash_commithash
 
-- stage: buildTestState
+- stage: buildTestStage
   displayName: Build Test
   jobs:
+  - job: generateJob
+    displayName: '- Generating'
+    pool:
+      vmImage: 'ubuntu-latest'
+    timeoutInMinutes: 5
+    cancelTimeoutInMinutes: 1
+    steps:
+    - checkout: none
+    - script: |
+        echo "$VARARRAY"
+        #echo "##vso[task.setVariable variable=legs;isOutput=true]{'a':{'myvar':'A'}, 'b':{'myvar':'B'}}"
+        exit 1
+      name: mtrx
+
   - job: buildTestJob
     displayName: '-'
+    dependsOn: generateJob
     strategy:
       maxParallel: 9
+      #matrix: $[dependencies.generateJob.outputs['mtrx.legs']]
       matrix:
         ubuntu_14_04:
           OS_DISTTAG: ubuntu-14.04
@@ -150,7 +170,7 @@ stages:
       inputs:
         testResultsFormat: cTest
         testResultsFiles: 'Testing/*/Test.xml'
-        testRunTitle: $[counter(format('{0:yyyyMMdd}', pipeline.startTime), 100)]
+        testRunTitle: $(OS_DISTTAG) unit tests
         publishRunAttachments: true
     - script: |
         docker rm \
