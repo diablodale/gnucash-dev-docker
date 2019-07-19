@@ -83,20 +83,20 @@ stages:
       displayName: Start Docker container
     - script: |
         docker exec \
-        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
         --env GNC_PHASES=build \
+        ${DOCKERHUBREPO}-${OS_DISTTAG} \
         /commonbuild
       displayName: Build
     - script: |
         docker exec \
-        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
         --env GNC_PHASES=install \
+        ${DOCKERHUBREPO}-${OS_DISTTAG} \
         /commonbuild
       displayName: Install
     - script: |
         docker exec \
-        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
         --env GNC_PHASES=test \
+        ${DOCKERHUBREPO}-${OS_DISTTAG} \
         /commonbuild
       displayName: Test
     - script: |
