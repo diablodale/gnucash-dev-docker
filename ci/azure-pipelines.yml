@@ -80,6 +80,14 @@ stages:
           OS_DISTTAG: fedora-29
         fedora_30:
           OS_DISTTAG: fedora-30
+    condition: |
+      and(
+        succeeded(),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          in(variables['OS_DISTTAG'], 'ubuntu-14.04', 'archlinux')
+        )
+      )
     continueOnError: true  # 'true' if future jobs should run even if this job fails; defaults to 'false'
     pool:
       vmImage: 'ubuntu-latest'
@@ -134,7 +142,7 @@ stages:
       inputs:
         testResultsFormat: cTest
         testResultsFiles: 'Testing/*/Test.xml'
-        testRunTitle: 'Unit Tests'
+        testRunTitle: $[format('{0} unit tests', variables['OS_DISTTAG'])]
         publishRunAttachments: true
     - script: |
         docker rm \
