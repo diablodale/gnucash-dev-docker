@@ -10,6 +10,8 @@ variables:
   GNC_GIT_CHECKOUT: '3.5'
   GNC_EXIT_WITH_RESULT: '1'
   PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
+  DOCKERHUBUSER: 'diablodale'
+  DOCKERHUBREPO: 'gnucashbuilder'
 
 stages:
 - stage: lockCommitStage
@@ -31,8 +33,6 @@ stages:
           echo "Error retrieving GnuCash git commit from GitHub with GNC_GIT_CHECKOUT=${GNC_GIT_CHECKOUT}" >&2
           exit 1
         fi
-        sudo apt-get -qq update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get -yqq install jq
         OBJECTHASH="$(jq --raw-output '.sha' < gnccommit.json)"
         if [[ -z "$OBJECTHASH" ]]; then
           echo 'Error. Unable to parse GitHub commit json for sha hash' >&2
@@ -59,7 +59,6 @@ stages:
     continueOnError: true  # 'true' if future jobs should run even if this job fails; defaults to 'false'
     pool:
       vmImage: 'ubuntu-latest'
-    container: $[format('diablodale/gnucashbuilder:{0}',variables['OS_DISTTAG'])]
     timeoutInMinutes: 30
     cancelTimeoutInMinutes: 2
     steps:
@@ -67,33 +66,41 @@ stages:
     - download: current
       artifact: gnucash_commithash
     - script: |
-        ls -la ${PIPELINE_WORKSPACE}
-        ls -la ${PIPELINE_WORKSPACE}/gnucash_commithash
         echo "##vso[task.setvariable variable=GNC_GIT_CHECKOUT]$(< ${PIPELINE_WORKSPACE}/gnucash_commithash/commithash)"
+      displayName: Retrieve locked commit hash
     - script: |
-        set -x
-        sudo chmod 777 /
-        sudo sh -c 'find / -maxdepth 1 -type f -print0 | xargs -0 chmod 755'
-        sudo chmod 755 /root /root/.bashrc
-        whoami
-        echo "GNC_GIT_CHECKOUT is ${GNC_GIT_CHECKOUT}"
-        ls -la /
-      displayName: non-root user fix
-    - script: |
-        . /root/.bashrc
+        docker pull "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
+      displayName: Download Docker image
+    - script: >
+        docker run
+          --name ${DOCKERHUBREPO}-${OS_DISTTAG}
+          --detach
+          --env GNC_GIT_CHECKOUT
+          --env PLATFORM_CMAKE_OPTS
+          --env GNC_EXIT_WITH_RESULT
+          "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
+          tail -f /dev/null
+      displayName: Start Docker container
+    - script: >
+        docker exec
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG}
+        --env GNC_PHASES=build
         /commonbuild
-      displayName: 'Build'
-      env:
-        GNC_PHASES: 'build'
-    - script: |
-        . /root/.bashrc
+      displayName: Build
+    - script: >
+        docker exec
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG}
+        --env GNC_PHASES=install
         /commonbuild
-      displayName: 'Install'
-      env:
-        GNC_PHASES: 'install'
-    - script: |
-        . /root/.bashrc
+      displayName: Install
+    - script: >
+        docker exec
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG}
+        --env GNC_PHASES=test
         /commonbuild
-      displayName: 'Test'
-      env:
-        GNC_PHASES: 'test'
+      displayName: Test
+    - script: >
+        docker rm
+        --force
+        ${DOCKERHUBREPO}-${OS_DISTTAG}
+      displayName: Remove Docker container
