@@ -6,8 +6,16 @@
 trigger:
 - azure1
 pr: none # will disable PR builds entirely; will not disable CI triggers
+schedules:
+- cron: '45 5 * * *'
+  displayName: Nightly build
+  branches:
+    include:
+    - azure1
+  always: true
+
 variables:
-  GNC_GIT_CHECKOUT: '3.5'
+  GNC_GIT_CHECKOUT: 'maint'
   GNC_EXIT_WITH_RESULT: '1'
   PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
   DOCKERHUBUSER: 'diablodale'
