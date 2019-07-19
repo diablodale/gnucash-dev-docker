@@ -71,36 +71,36 @@ stages:
     - script: |
         docker pull "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
       displayName: Download Docker image
-    - script: >
-        docker run
-          --name ${DOCKERHUBREPO}-${OS_DISTTAG}
-          --detach
-          --env GNC_GIT_CHECKOUT
-          --env PLATFORM_CMAKE_OPTS
-          --env GNC_EXIT_WITH_RESULT
-          "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
-          tail -f /dev/null
+    - script: |
+        docker run \
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
+        --detach \
+        --env GNC_GIT_CHECKOUT \
+        --env PLATFORM_CMAKE_OPTS \
+        --env GNC_EXIT_WITH_RESULT \
+        "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}" \
+        tail -f /dev/null
       displayName: Start Docker container
-    - script: >
-        docker exec
-        --name ${DOCKERHUBREPO}-${OS_DISTTAG}
-        --env GNC_PHASES=build
+    - script: |
+        docker exec \
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
+        --env GNC_PHASES=build \
         /commonbuild
       displayName: Build
-    - script: >
-        docker exec
-        --name ${DOCKERHUBREPO}-${OS_DISTTAG}
-        --env GNC_PHASES=install
+    - script: |
+        docker exec \
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
+        --env GNC_PHASES=install \
         /commonbuild
       displayName: Install
-    - script: >
-        docker exec
-        --name ${DOCKERHUBREPO}-${OS_DISTTAG}
-        --env GNC_PHASES=test
+    - script: |
+        docker exec \
+        --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
+        --env GNC_PHASES=test \
         /commonbuild
       displayName: Test
-    - script: >
-        docker rm
-        --force
+    - script: |
+        docker rm \
+        --force \
         ${DOCKERHUBREPO}-${OS_DISTTAG}
       displayName: Remove Docker container
