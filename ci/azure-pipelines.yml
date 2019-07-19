@@ -150,7 +150,7 @@ stages:
       inputs:
         testResultsFormat: cTest
         testResultsFiles: 'Testing/*/Test.xml'
-        testRunTitle: $(OS_DISTTAG) unit tests
+        testRunTitle: $[counter(format('{0:yyyyMMdd}', pipeline.startTime), 100)]
         publishRunAttachments: true
     - script: |
         docker rm \
