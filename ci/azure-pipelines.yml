@@ -16,15 +16,21 @@ schedules:
 
 variables:
   GNC_GIT_CHECKOUT: 'maint'
-  GNC_EXIT_WITH_RESULT: '1'
-  PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
-  DOCKERHUBUSER: 'diablodale'
-  DOCKERHUBREPO: 'gnucashbuilder'
   OS_DISTLIST: |
     ubuntu-14.04
+    ubuntu-16.04
+    ubuntu-18.04
+    ubuntu-19.04
+    debian-8
+    debian-9
     debian-10
     archlinux
+    centos-7
+    opensuse-15.0
     opensuse-15.1
+    fedora-28
+    fedora-29
+    fedora-30
 
 stages:
 - stage: lockCommitStage
@@ -69,12 +75,8 @@ stages:
     steps:
     - checkout: none
     - script: |
-        #echo -n "$OS_DISTLIST" | jq --raw-input --slurp --compact-output 'split("\n") | map(select(. != "")) | map({(.|gsub("\\W";"_")): {"OS_DISTTAG": .}}) | add'
         MTRX=$(jq --null-input --compact-output 'env.OS_DISTLIST | split("\n") | map(select(. != "")) | map({(.|gsub("\\W";"_")): {"OS_DISTTAG": .}}) | add')
-        echo "${MTRX}"
         echo "##vso[task.setVariable variable=buildVariables;isOutput=true]${MTRX}"
-        #echo "##vso[task.setVariable variable=buildVariables;isOutput=true]{'ubuntu_14_04':{'OS_DISTTAG':'ubuntu-14.04'}, 'archlinux':{'OS_DISTTAG':'archlinux'}}"
-        exit 1
       name: mtrx
 
   - job: buildTestJob
@@ -96,6 +98,11 @@ stages:
       vmImage: 'ubuntu-latest'
     timeoutInMinutes: 30
     cancelTimeoutInMinutes: 2
+    variables:
+      GNC_EXIT_WITH_RESULT: '1'
+      PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
+      DOCKERHUBUSER: 'diablodale'
+      DOCKERHUBREPO: 'gnucashbuilder'
     steps:
     - checkout: none
     - download: current
@@ -107,6 +114,7 @@ stages:
         docker pull "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
       displayName: Download Docker image
     - script: |
+        echo "debug validate ${GNC_GIT_CHECKOUT}"
         docker run \
         --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
         --detach \
