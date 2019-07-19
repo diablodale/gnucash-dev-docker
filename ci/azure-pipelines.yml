@@ -20,10 +20,11 @@ variables:
   PLATFORM_CMAKE_OPTS: '-DCMAKE_INSTALL_PREFIX=/opt -DWITH_PYTHON=ON'
   DOCKERHUBUSER: 'diablodale'
   DOCKERHUBREPO: 'gnucashbuilder'
-  VARARRAY: |
-    value1
-    value2
-    value3
+  OS_DISTLIST: |
+    ubuntu-14.04
+    debian-10
+    archlinux
+    opensuse-15.1
 
 stages:
 - stage: lockCommitStage
@@ -68,8 +69,11 @@ stages:
     steps:
     - checkout: none
     - script: |
-        echo "$VARARRAY"
-        #echo "##vso[task.setVariable variable=legs;isOutput=true]{'a':{'myvar':'A'}, 'b':{'myvar':'B'}}"
+        #echo -n "$OS_DISTLIST" | jq --raw-input --slurp --compact-output 'split("\n") | map(select(. != "")) | map({(.|gsub("\\W";"_")): {"OS_DISTTAG": .}}) | add'
+        MTRX=$(jq --null-input --compact-output 'env.OS_DISTLIST | split("\n") | map(select(. != "")) | map({(.|gsub("\\W";"_")): {"OS_DISTTAG": .}}) | add')
+        echo "${MTRX}"
+        echo "##vso[task.setVariable variable=buildVariables;isOutput=true]${MTRX}"
+        #echo "##vso[task.setVariable variable=buildVariables;isOutput=true]{'ubuntu_14_04':{'OS_DISTTAG':'ubuntu-14.04'}, 'archlinux':{'OS_DISTTAG':'archlinux'}}"
         exit 1
       name: mtrx
 
@@ -78,36 +82,7 @@ stages:
     dependsOn: generateJob
     strategy:
       maxParallel: 9
-      #matrix: $[dependencies.generateJob.outputs['mtrx.legs']]
-      matrix:
-        ubuntu_14_04:
-          OS_DISTTAG: ubuntu-14.04
-        ubuntu_16_04:
-          OS_DISTTAG: ubuntu-16.04
-        ubuntu_18_04:
-          OS_DISTTAG: ubuntu-18.04
-        ubuntu_19_04:
-          OS_DISTTAG: ubuntu-19.04
-        debian_8:
-          OS_DISTTAG: debian-8
-        debian_9:
-          OS_DISTTAG: debian-9
-        debian_10:
-          OS_DISTTAG: debian-10
-        archlinux:
-          OS_DISTTAG: archlinux
-        centos_7:
-          OS_DISTTAG: centos-7
-        opensuse_15_0:
-          OS_DISTTAG: opensuse-15.0
-        opensuse_15_1:
-          OS_DISTTAG: opensuse-15.1
-        fedora_28:
-          OS_DISTTAG: fedora-28
-        fedora_29:
-          OS_DISTTAG: fedora-29
-        fedora_30:
-          OS_DISTTAG: fedora-30
+      matrix: $[dependencies.generateJob.outputs['mtrx.buildVariables']]
     condition: |
       and(
         succeeded(),
