@@ -93,12 +93,25 @@ stages:
         ${DOCKERHUBREPO}-${OS_DISTTAG} \
         /commonbuild
       displayName: Install
+      continueOnError: true
     - script: |
         docker exec \
         --env GNC_PHASES=test \
         ${DOCKERHUBREPO}-${OS_DISTTAG} \
         /commonbuild
       displayName: Test
+      continueOnError: true
+    - script: |
+        docker cp \
+        "${DOCKERHUBREPO}-${OS_DISTTAG}:/build/Testing" \
+        ./
+      displayName: Retrieve Test Report
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: cTest
+        testResultsFiles: 'Testing/*/Test.xml'
+        testRunTitle: 'Unit Tests'
+        publishRunAttachments: true
     - script: |
         docker rm \
         --force \
