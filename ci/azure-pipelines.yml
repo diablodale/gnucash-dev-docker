@@ -64,6 +64,7 @@ stages:
     - script: |
         MTRX=$(jq --null-input --compact-output 'env.OS_DISTLIST | split("\n") | map(select(. != "")) | map({(.|gsub("\\W";"_")): {"OS_DISTTAG": .}}) | add')
         echo "##vso[task.setVariable variable=buildVariables;isOutput=true]${MTRX}"
+        echo "$MTRX"
       name: mtrx
       displayName: Generate matrix of OS versions
 
@@ -71,7 +72,7 @@ stages:
     displayName: '-'
     dependsOn: generateJob
     strategy:
-      maxParallel: 9
+      maxParallel: 8
       matrix: $[dependencies.generateJob.outputs['mtrx.buildVariables']]
     condition: |
       and(
@@ -98,7 +99,6 @@ stages:
         docker pull "${DOCKERHUBUSER}/${DOCKERHUBREPO}:${OS_DISTTAG}"
       displayName: Download Docker image
     - script: |
-        echo "debug commit ${GNC_GIT_CHECKOUT}"
         docker run \
         --name ${DOCKERHUBREPO}-${OS_DISTTAG} \
         --detach \
