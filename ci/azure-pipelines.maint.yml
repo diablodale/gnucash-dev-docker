@@ -1,0 +1,14 @@
+trigger: none
+pr: none
+schedules:
+- cron: '45 5 * * *'
+  displayName: Nightly scheduled build
+  branches:
+    include:
+    - azure1
+  always: true
+
+stages:
+- template: azure-pipelines.tmpl.yml
+  parameters:
+    GNC_GIT_CHECKOUT: 'maint'

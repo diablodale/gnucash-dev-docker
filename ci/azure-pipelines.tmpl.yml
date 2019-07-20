@@ -15,19 +15,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-trigger:
-- azure1
-pr: none # will disable PR builds entirely; will not disable CI triggers
-schedules:
-- cron: '45 5 * * *'
-  displayName: Scheduled build
-  branches:
-    include:
-    - azure1
-  always: true
-
-variables:
-  GNC_GIT_CHECKOUT: 'maint'
+parameters:
+  GNC_GIT_CHECKOUT: ''
   OS_DISTLIST: |
     ubuntu-14.04
     ubuntu-16.04
@@ -47,6 +36,9 @@ variables:
 stages:
 - stage: buildTestStage
   displayName: Build Test
+  variables:
+    GNC_GIT_CHECKOUT: ${{ parameters.GNC_GIT_CHECKOUT }}
+    OS_DISTLIST: ${{ parameters.OS_DISTLIST }}
   jobs:
   - job: generateJob
     displayName: '- Generating'

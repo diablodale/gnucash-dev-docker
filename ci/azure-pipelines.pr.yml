@@ -1,0 +1,12 @@
+trigger:
+- azure1
+pr:
+- azure1
+
+stages:
+- template: azure-pipelines.tmpl.yml
+  parameters:
+    GNC_GIT_CHECKOUT: 'maint'
+    OS_DISTLIST: |
+      ubuntu-14.04
+      archlinux

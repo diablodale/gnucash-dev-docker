@@ -1,0 +1,14 @@
+trigger: none
+pr: none
+schedules:
+- cron: '22 22 5 * *'
+  displayName: Monthly scheduled build
+  branches:
+    include:
+    - azure1
+  always: true
+
+stages:
+- template: azure-pipelines.tmpl.yml
+  parameters:
+    GNC_GIT_CHECKOUT: '3.5'
