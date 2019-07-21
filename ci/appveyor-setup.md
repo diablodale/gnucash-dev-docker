@@ -38,6 +38,7 @@ such as updated packages, OS patches, date/time handling (Y2K), etc.
   * Default branch `master`  
     *Choice depends on branch you desire for manual UI and cron scheduled builds. And what branch contains the `appveyor.yml` you want and how it relates to setting `Custom configuration .yml file name/location`.*
   * Do not build tags `selected`
+  * Build timeout `30`
   * Build schedule `22 22 5 * *`  
     *Contact the AppVeyor team and briefly describe your need for scheduled builds*
   * Custom configuration .yml file name `ci/appveyor.yml`
