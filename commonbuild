@@ -19,6 +19,7 @@
 
 if [ "$GNC_IGNORE_BUILD_FAIL" != "1" ]; then
     set -e
+    set -o pipefail
 fi
 
 # prepare source directory
@@ -67,11 +68,11 @@ dbus-uuidgen --ensure
 # execute build and/or test phases
 GNC_PHASES="${GNC_PHASES:-build,test}"
 if [[ "$BUILDTYPE" == "cmake-make" ]]; then
-    [[ "$GNC_PHASES" =~ "build" ]] && cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/ && make -j $(nproc)
+    [[ "$GNC_PHASES" =~ "build" ]] && (cmake $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash/ && make -j $(nproc) || exit 1)
     [[ "$GNC_PHASES" =~ "install" ]] && make install
     [[ "$GNC_PHASES" =~ "test" ]] && (make check || . /afterfailure)
 elif [[ "$BUILDTYPE" == "cmake-ninja" ]]; then
-    [[ "$GNC_PHASES" =~ "build" ]] && cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash && ninja
+    [[ "$GNC_PHASES" =~ "build" ]] && (cmake -GNinja $_GNC_CMAKE_COMPAT $PLATFORM_CMAKE_OPTS ../gnucash && ninja || exit 1)
     [[ "$GNC_PHASES" =~ "install" ]] && ninja install
     [[ "$GNC_PHASES" =~ "test" ]] && (ninja check || . /afterfailure)
 else
